@@ -8,15 +8,169 @@
     <!-- Data Sources -->
     <!-- Iowa TopoJSON: https://github.com/subyfly/topojson/blob/master/us-states/IA-19-iowa-counties.json?short_path=d0a8f93 -->
     <!-- Custom stylesheets -->
+    <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/map.css" />
   </head>
   <body>
-    <div id="iowa-map"></div>
+    <div class="grid-map-form">
+      <div id="iowa-map"></div>
+      <div class="form">
+        <div class="filter-by-counties">
+          <div class="selectBox" onclick="toggleCounties()">
+            <label>Filter by Counties</label>
+            <div class="arrow"></div>
+          </div>
+          <div
+            id="county-list"
+            style="display: none; border: 1px #dadada solid"
+          >
+            <label><input type="checkbox" value="Adair" />Adair</label>
+            <label><input type="checkbox" value="Adams" />Adams</label>
+            <label><input type="checkbox" value="Allamakee" />Allamakee</label>
+            <label><input type="checkbox" value="Appanoose" />Appanoose</label>
+            <label><input type="checkbox" value="Audubon" />Audubon</label>
+            <label><input type="checkbox" value="Benton" />Benton</label>
+            <label
+              ><input type="checkbox" value="Black Hawk" />Black Hawk</label
+            >
+            <label><input type="checkbox" value="Boone" />Boone</label>
+            <label><input type="checkbox" value="Bremer" />Bremer</label>
+            <label><input type="checkbox" value="Buchanan" />Buchanan</label>
+            <label
+              ><input type="checkbox" value="Buena Vista" />Buena Vista</label
+            >
+            <label><input type="checkbox" value="Butler" />Butler</label>
+            <label><input type="checkbox" value="Calhoun" />Calhoun</label>
+            <label><input type="checkbox" value="Carroll" />Carroll</label>
+            <label><input type="checkbox" value="Cass" />Cass</label>
+            <label><input type="checkbox" value="Cedar" />Cedar</label>
+            <label
+              ><input type="checkbox" value="Cerro Gordo" />Cerro Gordo</label
+            >
+            <label><input type="checkbox" value="Cherokee" />Cherokee</label>
+            <label><input type="checkbox" value="Chickasaw" />Chickasaw</label>
+            <label><input type="checkbox" value="Clarke" />Clarke</label>
+            <label><input type="checkbox" value="Clay" />Clay</label>
+            <label><input type="checkbox" value="Clayton" />Clayton</label>
+            <label><input type="checkbox" value="Clinton" />Clinton</label>
+            <label><input type="checkbox" value="Crawford" />Crawford</label>
+            <label><input type="checkbox" value="Dallas" />Dallas</label>
+            <label><input type="checkbox" value="Davis" />Davis</label>
+            <label><input type="checkbox" value="Decatur" />Decatur</label>
+            <label><input type="checkbox" value="Delaware" />Delaware</label>
+            <label
+              ><input type="checkbox" value="Des Moines" />Des Moines</label
+            >
+            <label><input type="checkbox" value="Dickinson" />Dickinson</label>
+            <label><input type="checkbox" value="Dubuque" />Dubuque</label>
+            <label><input type="checkbox" value="Emmet" />Emmet</label>
+            <label><input type="checkbox" value="Fayette" />Fayette</label>
+            <label><input type="checkbox" value="Floyd" />Floyd</label>
+            <label><input type="checkbox" value="Franklin" />Franklin</label>
+            <label><input type="checkbox" value="Fremont" />Fremont</label>
+            <label><input type="checkbox" value="Greene" />Greene</label>
+            <label><input type="checkbox" value="Grundy" />Grundy</label>
+            <label><input type="checkbox" value="Guthrie" />Guthrie</label>
+            <label><input type="checkbox" value="Hamilton" />Hamilton</label>
+            <label><input type="checkbox" value="Hancock" />Hancock</label>
+            <label><input type="checkbox" value="Hardin" />Hardin</label>
+            <label><input type="checkbox" value="Harrison" />Harrison</label>
+            <label><input type="checkbox" value="Henry" />Henry</label>
+            <label><input type="checkbox" value="Howard" />Howard</label>
+            <label><input type="checkbox" value="Humboldt" />Humboldt</label>
+            <label><input type="checkbox" value="Ida" />Ida</label>
+            <label><input type="checkbox" value="Iowa" />Iowa</label>
+            <label><input type="checkbox" value="Jackson" />Jackson</label>
+            <label><input type="checkbox" value="Jasper" />Jasper</label>
+            <label><input type="checkbox" value="Jefferson" />Jefferson</label>
+            <label><input type="checkbox" value="Johnson" />Johnson</label>
+            <label><input type="checkbox" value="Jones" />Jones</label>
+            <label><input type="checkbox" value="Keokuk" />Keokuk</label>
+            <label><input type="checkbox" value="Kossuth" />Kossuth</label>
+            <label><input type="checkbox" value="Lee" />Lee</label>
+            <label><input type="checkbox" value="Linn" />Linn</label>
+            <label><input type="checkbox" value="Louisa" />Louisa</label>
+            <label><input type="checkbox" value="Lucas" />Lucas</label>
+            <label><input type="checkbox" value="Lyon" />Lyon</label>
+            <label><input type="checkbox" value="Madison" />Madison</label>
+            <label><input type="checkbox" value="Mahaska" />Mahaska</label>
+            <label><input type="checkbox" value="Marion" />Marion</label>
+            <label><input type="checkbox" value="Marshall" />Marshall</label>
+            <label><input type="checkbox" value="Mills" />Mills</label>
+            <label><input type="checkbox" value="Mitchell" />Mitchell</label>
+            <label><input type="checkbox" value="Monona" />Monona</label>
+            <label><input type="checkbox" value="Monroe" />Monroe</label>
+            <label
+              ><input type="checkbox" value="Montgomery" />Montgomery</label
+            >
+            <label><input type="checkbox" value="Muscatine" />Muscatine</label>
+            <label><input type="checkbox" value="O'Brien" />O'Brien</label>
+            <label><input type="checkbox" value="Osceola" />Osceola</label>
+            <label><input type="checkbox" value="Page" />Page</label>
+            <label><input type="checkbox" value="Palo Alto" />Palo Alto</label>
+            <label><input type="checkbox" value="Plymouth" />Plymouth</label>
+            <label
+              ><input type="checkbox" value="Pocahontas" />Pocahontas</label
+            >
+            <label><input type="checkbox" value="Polk" />Polk</label>
+            <label
+              ><input
+                type="checkbox"
+                value="Pottawattamie"
+              />Pottawattamie</label
+            >
+            <label><input type="checkbox" value="Poweshiek" />Poweshiek</label>
+            <label><input type="checkbox" value="Ringgold" />Ringgold</label>
+            <label><input type="checkbox" value="Sac" />Sac</label>
+            <label><input type="checkbox" value="Scott" />Scott</label>
+            <label><input type="checkbox" value="Shelby" />Shelby</label>
+            <label><input type="checkbox" value="Sioux" />Sioux</label>
+            <label><input type="checkbox" value="Story" />Story</label>
+            <label><input type="checkbox" value="Tama" />Tama</label>
+            <label><input type="checkbox" value="Taylor" />Taylor</label>
+            <label><input type="checkbox" value="Union" />Union</label>
+            <label><input type="checkbox" value="Van Buren" />Van Buren</label>
+            <label><input type="checkbox" value="Wapello" />Wapello</label>
+            <label><input type="checkbox" value="Warren" />Warren</label>
+            <label
+              ><input type="checkbox" value="Washington" />Washington</label
+            >
+            <label><input type="checkbox" value="Wayne" />Wayne</label>
+            <label><input type="checkbox" value="Webster" />Webster</label>
+            <label><input type="checkbox" value="Winnebago" />Winnebago</label>
+            <label
+              ><input type="checkbox" value="Winneshiek" />Winneshiek</label
+            >
+            <label><input type="checkbox" value="Woodbury" />Woodbury</label>
+            <label><input type="checkbox" value="Worth" />Worth</label>
+            <label><input type="checkbox" value="Wright" />Wright</label>
+          </div>
+        </div>
+
+        <div class="choose-data">
+          <div class="selectBox" onclick="toggleData()">
+            <label>Choose Data</label>
+            <div class="arrow"></div>
+          </div>
+          <div id="data-list" style="display: none; border: 1px #dadada solid">
+            <label
+              ><input type="checkbox" value="Finance" />County Budget</label
+            >
+            <label
+              ><input type="checkbox" value="Education_Enrollment" />Public
+              School Enrollment</label
+            >
+            <label><input type="checkbox" value="Liquor" />Liquor Sales</label>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
   <!-- Import D3 and TopoJSON-->
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://unpkg.com/topojson-client@3"></script>
 
   <!-- Custom Scripts -->
+  <script src="js/filtering.js"></script>
   <script src="js/iowa_map.js"></script>
 </html>
