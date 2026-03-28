@@ -1,5 +1,15 @@
 var activeCounties = new Set();
 
+// Returns the correct resting color for a county.
+// If school.js has loaded enrollment data, use that color.
+// Otherwise fall back to white (the default blank map state).
+function getBaseColor(countyName) {
+  if (typeof countyTotals !== "undefined" && countyTotals[countyName]) {
+    return getColorForEnrollment(countyTotals[countyName]);
+  }
+  return "#ffffff";
+}
+
 const svg = d3
   .select("#iowa-map")
   .append("svg")
@@ -37,26 +47,6 @@ d3.json(
   // Mouseover functions
   svg
     .selectAll("path")
-    .on("mouseover", function (d) {
-      // Highlight if not already clicked
-      if (!d3.select(this).classed("active")) {
-        d3.select(this)
-          .transition()
-          .duration(100)
-          .style("fill", "#FFBC3E")
-          .attr("opacity", 1);
-      }
-    })
-    .on("mouseout", function (d) {
-      // Revert only if not clicked
-      if (!d3.select(this).classed("active")) {
-        d3.select(this)
-          .transition()
-          .duration(200)
-          .style("fill", "#ffffff")
-          .attr("opacity", 1);
-      }
-    })
     .on("click", function (event, d) {
       // Check current active state
       const isActive = d3.select(this).classed("active");
@@ -71,7 +61,7 @@ d3.json(
         // If becoming active, add to activeCounties
         activeCounties.add(d.properties.NAME);
       } else {
-        d3.select(this).style("fill", "#FFFFFF");
+        d3.select(this).style("fill", getBaseColor(d.properties.NAME));
 
         // If becoming inactive, delete from activeCounties
         activeCounties.delete(d.properties.NAME);
@@ -138,7 +128,7 @@ d3.json(
         if (checkboxActive) {
           return "#FFBC3E";
         } else {
-          return "#FFFFFF";
+          return getBaseColor(value);
         }
       });
 
