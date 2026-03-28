@@ -157,7 +157,7 @@
               ><input type="checkbox" value="Finance" />County Budget</label
             >
             <label
-              ><input type="checkbox" value="Education_Enrollment" />Public
+              ><input type="checkbox" value="Education_Enrollment" onclick="enrollmentClickHandler()" />Public
               School Enrollment</label
             >
             <label><input type="checkbox" value="Liquor" />Liquor Sales</label>
@@ -169,8 +169,11 @@
   <!-- Import D3 and TopoJSON-->
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://unpkg.com/topojson-client@3"></script>
+  <script src="https://unpkg.com/papaparse@latest/papaparse.min.js"></script>
+
 
   <!-- Custom Scripts -->
   <script src="js/filtering.js"></script>
   <script src="js/iowa_map.js"></script>
+  <script src="js/school.js"></script>
 </html>
