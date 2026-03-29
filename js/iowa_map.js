@@ -54,34 +54,6 @@ d3.json(
   // Mouseover functions
   svg
     .selectAll("path")
-    .on("mouseover", function (d) {
-      // only function if drag isn't currently active
-      if (dragActive) {
-        return;
-      }
-      // Highlight if not already clicked
-      if (!d3.select(this).classed("active")) {
-        d3.select(this)
-          .transition()
-          .duration(100)
-          .style("fill", "#FFBC3E")
-          .attr("opacity", 1);
-      }
-    })
-    .on("mouseout", function (d) {
-      // only function if drag isn't currently active
-      if (dragActive) {
-        return;
-      }
-      // Revert only if not clicked
-      if (!d3.select(this).classed("active")) {
-        d3.select(this)
-          .transition()
-          .duration(200)
-          .style("fill", "#ffffff")
-          .attr("opacity", 1);
-      }
-    })
     .on("click", function (event, d) {
       // only function if drag isn't currently active
       if (dragActive) {
