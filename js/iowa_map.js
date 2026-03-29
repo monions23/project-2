@@ -190,6 +190,7 @@ d3.json(
       checkbox.checked = false;
     }
 
+    // check all value
     syncAllCheckbox();
   }
 
