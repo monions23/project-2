@@ -4,7 +4,7 @@ var dragActive = false;
 // For tracking draggingxw behavior
 var previousCounty = "";
 var dragColor = "";
-var activateAbility = false;
+var setActivate = false;
 
 // Returns the correct resting color for a county.
 // If school.js has loaded enrollment data, use that color.
@@ -124,10 +124,10 @@ d3.json(
       var firstNodeActive = d3.select(this).classed("active");
       if (!firstNodeActive) {
         dragColor = "#FFBC3E";
-        activateAbility = true;
+        setActivate = true;
       } else {
         dragColor = "#FFFFFF";
-        activateAbility = false;
+        setActivate = false;
       }
     })
     .on("drag", function (event) {
@@ -145,7 +145,7 @@ d3.json(
         var county = d3.select(node);
 
         // Set the county to the opposite of its current state
-        county.classed("active", activateAbility);
+        county.classed("active", setActivate);
 
         // Fill with color that we started out in for drag
         county.style("fill", dragColor);
@@ -153,9 +153,15 @@ d3.json(
         // Get the data with the county name, and update the checklist
         var countyData = county.datum();
         var countyName = countyData.properties.NAME;
-        var isActive = !activateAbility;
-        console.log(countyName);
-        updateChecklist(countyName, isActive);
+        var prevActiveState = !setActivate;
+
+        if (!prevActiveState) {
+          activeCounties.add(countyName);
+        } else {
+          activeCounties.delete(countyName);
+        }
+        console.log(activeCounties);
+        updateChecklist(countyName, prevActiveState);
 
         // set previous county to make sure active state is not toggled multiple times for 1
       }
@@ -183,6 +189,9 @@ d3.json(
     } else {
       checkbox.checked = false;
     }
+
+    // check all value
+    syncAllCheckbox();
   }
 
   // Form functionality - event listener for changing form input
@@ -199,41 +208,73 @@ d3.json(
   // Function for updating the map based on changing form values
   function updateMap(value) {
     // select the path for the corresponding county
-
     // checkboxActive relates to whether the corresponding checkbox is checked
     const checkboxActive = document.querySelector(
       `input[type="checkbox"][value="${value}"]`,
     ).checked;
 
-    // find the path corresponding with the county name being checked in the form
-    // change that path's active status based on the checkbox's status
-    // if checkbox is becoming active, change the color to orange, else change to white
-    const countyPath = d3
-      .selectAll("path")
-      .filter((d) => d.properties.NAME === value)
-      .classed("active", checkboxActive)
-      .style("fill", function () {
-        if (checkboxActive) {
-          return "#FFBC3E";
-        } else {
-          return getBaseColor(value);
-        }
-      });
+    // Fill all counties and update checklist if "All"" was clicked
+    if (value === "All") {
+      d3.selectAll("path")
+        .classed("active", checkboxActive)
+        .style("fill", function () {
+          if (checkboxActive) {
+            return "#FFBC3E";
+          } else {
+            return getBaseColor(value);
+          }
+        });
 
-    // add or remove county from activeCounties based on status of checkbox
-    if (checkboxActive) {
-      activeCounties.add(value);
+      // Update all checkboxes
+      d3.select("#county-list")
+        .selectAll(`input[type="checkbox"]`)
+        .property("checked", checkboxActive);
+
+      // Update activeCounties set
+      if (checkboxActive) {
+        d3.selectAll("path").each(function (d) {
+          activeCounties.add(d.properties.NAME);
+        });
+      } else {
+        activeCounties.clear();
+      }
     } else {
-      activeCounties.delete(value);
+      // find the path corresponding with the county name being checked in the form
+      // change that path's active status based on the checkbox's status
+      // if checkbox is becoming active, change the color to orange, else change to white
+      d3.selectAll("path")
+        .filter((d) => d.properties.NAME === value)
+        .classed("active", checkboxActive)
+        .style("fill", function () {
+          if (checkboxActive) {
+            return "#FFBC3E";
+          } else {
+            return getBaseColor(value);
+          }
+        });
+
+      // add or remove county from activeCounties based on status of checkbox
+      if (checkboxActive) {
+        activeCounties.add(value);
+      } else {
+        activeCounties.delete(value);
+      }
+
+      console.log(activeCounties);
+      syncAllCheckbox();
     }
+  }
 
-    console.log(activeCounties);
-    // check if the state is already filled in due to click
+  function syncAllCheckbox() {
+    const allBox = document.querySelector(`input[value="All"]`);
+    const countyBoxes = document.querySelectorAll(
+      `#county-list input[type="checkbox"]:not([value="All"])`,
+    );
 
-    // if (isChecked) {
-    // }
+    // Check if all counties are selected
+    const allChecked = Array.from(countyBoxes).every((cb) => cb.checked);
 
-    // console.log(checkedTypes);å
+    allBox.checked = allChecked;
   }
 
   // Append county labels

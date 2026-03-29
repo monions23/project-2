@@ -17,13 +17,19 @@
       <div class="form">
         <div class="filter-by-counties">
           <div class="selectBox" onclick="toggleCounties()">
-            <label>Filter by Counties</label>
-            <div class="arrow"></div>
+            <input
+              id="county-search"
+              type="text"
+              placeholder="Search counties..."
+              style="width: auto; padding: 6px; margin-bottom: 8px"
+            />
           </div>
           <div
             id="county-list"
             style="display: none; border: 1px #dadada solid"
           >
+            <label><input type="checkbox" value="All" />All</label>
+            <hr />
             <label><input type="checkbox" value="Adair" />Adair</label>
             <label><input type="checkbox" value="Adams" />Adams</label>
             <label><input type="checkbox" value="Allamakee" />Allamakee</label>
@@ -157,8 +163,11 @@
               ><input type="checkbox" value="Finance" />County Budget</label
             >
             <label
-              ><input type="checkbox" value="Education_Enrollment" onclick="enrollmentClickHandler()" />Public
-              School Enrollment</label
+              ><input
+                type="checkbox"
+                value="Education_Enrollment"
+                onclick="enrollmentClickHandler()"
+              />Public School Enrollment</label
             >
             <label><input type="checkbox" value="Liquor" />Liquor Sales</label>
           </div>
@@ -170,7 +179,6 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://unpkg.com/topojson-client@3"></script>
   <script src="https://unpkg.com/papaparse@latest/papaparse.min.js"></script>
-
 
   <!-- Custom Scripts -->
   <script src="js/filtering.js"></script>
