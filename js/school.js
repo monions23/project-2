@@ -1,7 +1,7 @@
 // js/school.js
-// Handles the Public School Enrollment choropleth 
+// Handles the Public School Enrollment choropleth
 
-// Color scale 
+// Color scale
 const _RED8 = "#1A0000"; // > 200,000
 const _RED7 = "#4D0000"; // > 100,000
 const _RED6 = "#7A0000"; // >  50,000
@@ -17,15 +17,15 @@ function getColorForEnrollment(enrollment) {
   if (enrollment > 50000) return _RED6;
   if (enrollment > 20000) return _RED5;
   if (enrollment > 10000) return _RED4;
-  if (enrollment >  5000) return _RED3;
-  if (enrollment >  2000) return _RED2;
+  if (enrollment > 5000) return _RED3;
+  if (enrollment > 2000) return _RED2;
   return _RED1;
 }
 // countyTotals is global so iowa_map.js getBaseColor() can read it.
 var enrollmentTooltip = null;
 var countyTotals = {};
 
-//  Tooltip 
+//  Tooltip
 function createTooltip() {
   if (enrollmentTooltip) return;
   enrollmentTooltip = d3
@@ -50,11 +50,9 @@ function createTooltip() {
 function attachHoverEvents() {
   createTooltip();
 
-  svg.selectAll("path")
+  svg
+    .selectAll("path")
     .on("mouseover.school", function (event, d) {
-      if (!d3.select(this).classed("active")) {
-        d3.select(this).transition().duration(100).style("fill", "#FFBC3E");
-      }
       // Only show tooltip if data has been loaded
       if (Object.keys(countyTotals).length > 0) {
         var name = d.properties.NAME;
@@ -62,10 +60,12 @@ function attachHoverEvents() {
         enrollmentTooltip
           .style("display", "block")
           .html(
-            "<strong>" + name + " County</strong><br>" +
-            "PK-12 Enrollment: <strong>" +
-            (total !== undefined ? total.toLocaleString() : "No data") +
-            "</strong>"
+            "<strong>" +
+              name +
+              " County</strong><br>" +
+              "PK-12 Enrollment: <strong>" +
+              (total !== undefined ? total.toLocaleString() : "No data") +
+              "</strong>",
           );
       }
     })
@@ -73,7 +73,7 @@ function attachHoverEvents() {
       var coords = d3.pointer(event, d3.select("#iowa-map").node());
       enrollmentTooltip
         .style("left", coords[0] + 14 + "px")
-        .style("top",  coords[1] - 28 + "px");
+        .style("top", coords[1] - 28 + "px");
     })
     .on("mouseout.school", function (event, d) {
       enrollmentTooltip.style("display", "none");
@@ -83,12 +83,18 @@ function attachHoverEvents() {
         var restoreColor = countyTotals[name]
           ? getColorForEnrollment(countyTotals[name])
           : "#ffffff";
-        d3.select(this).transition().duration(200).style("fill", restoreColor);
+        d3.select(this)
+          .transition()
+          .duration(200)
+          .style("fill", restoreColor)
+          .style("stroke", "#000000") // or whatever your original border color is
+          .style("stroke-width", "1px")
+          .style("opacity", "1");
       }
     });
 }
 
-// Combine CSV districts into county totals 
+// Combine CSV districts into county totals
 function getCountyTotals(csvData) {
   var totals = {};
   csvData.forEach(function (row) {
@@ -101,7 +107,7 @@ function getCountyTotals(csvData) {
   return totals;
 }
 
-// entry point 
+// entry point
 function enrollmentClickHandler() {
   var isChecked = event.target.checked;
 
@@ -112,26 +118,34 @@ function enrollmentClickHandler() {
   }
 
   d3.csv(
-    "Iowa_Public_School_District_Enrollment_(PreK-12_Enrollment_by_Grade,_Race_and_Gender)_20260324.csv"
+    "Iowa_Public_School_District_Enrollment_(PreK-12_Enrollment_by_Grade,_Race_and_Gender)_20260324.csv",
   ).then(function (csvData) {
-
     // Write into the global so getBaseColor() in iowa_map.js can see it
     countyTotals = getCountyTotals(csvData);
 
     // Color every county
     var countyList = document.getElementById("county-list");
     for (var i = 0; i < countyList.children.length; i++) {
-      var countyName = countyList.children[i].children[0].value;
+      if (countyName != "All") {
+        var countyName = countyList.children[i].children[0].value;
+      }
       d3.selectAll("path")
-        .filter(function (d) { return d.properties.NAME === countyName; })
+        .filter(function (d) {
+          return d.properties.NAME === countyName;
+        })
         .style("fill", getColorForEnrollment(countyTotals[countyName] || 0));
     }
 
-    console.log("[school.js] Loaded. Johnson:", countyTotals["Johnson"], "| Polk:", countyTotals["Polk"]);
+    console.log(
+      "[school.js] Loaded. Johnson:",
+      countyTotals["Johnson"],
+      "| Polk:",
+      countyTotals["Polk"],
+    );
   });
 }
 
-//  Attach hover as soon as the map paths exist 
+//  Attach hover as soon as the map paths exist
 // iowa_map.js loads the TopoJSON asynchronously
 var hoverAttached = false;
 var hoverPoll = setInterval(function () {
