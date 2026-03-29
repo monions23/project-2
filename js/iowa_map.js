@@ -1,4 +1,10 @@
 var activeCounties = new Set();
+var dragActive = false;
+
+// For tracking draggingxw behavior
+var previousCounty = "";
+var dragColor = "";
+var activateAbility = false;
 
 // Returns the correct resting color for a county.
 // If school.js has loaded enrollment data, use that color.
@@ -31,7 +37,7 @@ d3.json(
   const path = d3.geoPath().projection(projection);
 
   // Define drag behavior
-  const drag = d3.drag().on("drag", dragged);
+  // const drag = d3.drag().on("drag", dragged);
 
   // Append the map to the svg
   svg
@@ -40,6 +46,7 @@ d3.json(
     .data(geojson.features)
     .enter()
     .append("path")
+    .attr("class", "county")
     .attr("d", path)
     .attr("fill", "#ffffff")
     .attr("stroke", "#000000");
@@ -47,7 +54,39 @@ d3.json(
   // Mouseover functions
   svg
     .selectAll("path")
+    .on("mouseover", function (d) {
+      // only function if drag isn't currently active
+      if (dragActive) {
+        return;
+      }
+      // Highlight if not already clicked
+      if (!d3.select(this).classed("active")) {
+        d3.select(this)
+          .transition()
+          .duration(100)
+          .style("fill", "#FFBC3E")
+          .attr("opacity", 1);
+      }
+    })
+    .on("mouseout", function (d) {
+      // only function if drag isn't currently active
+      if (dragActive) {
+        return;
+      }
+      // Revert only if not clicked
+      if (!d3.select(this).classed("active")) {
+        d3.select(this)
+          .transition()
+          .duration(200)
+          .style("fill", "#ffffff")
+          .attr("opacity", 1);
+      }
+    })
     .on("click", function (event, d) {
+      // only function if drag isn't currently active
+      if (dragActive) {
+        return;
+      }
       // Check current active state
       const isActive = d3.select(this).classed("active");
 
@@ -57,7 +96,6 @@ d3.json(
       // Set to orange if it's becoming active, else set it to white
       if (!isActive) {
         d3.select(this).style("fill", "#FFBC3E");
-
         // If becoming active, add to activeCounties
         activeCounties.add(d.properties.NAME);
       } else {
@@ -73,18 +111,68 @@ d3.json(
       console.log("Clicked path data:", d);
       console.log(activeCounties);
     });
-  // Drag functionality
-  // svg.selectAll("path").call(brushed);
 
-  function dragged(event, d) {
-    console.log(d3.select(this));
-  }
+  // Drag functionality
+  const dragHandler = d3
+    .drag()
+    .on("start", function () {
+      // Set dragActive state to true
+      dragActive = true;
+
+      // Get the first node, and calculate what drag value will be (activate or deactivate)
+      // Color and boolean correspond to whether county will be activated or deactivated
+      var firstNodeActive = d3.select(this).classed("active");
+      if (!firstNodeActive) {
+        dragColor = "#FFBC3E";
+        activateAbility = true;
+      } else {
+        dragColor = "#FFFFFF";
+        activateAbility = false;
+      }
+    })
+    .on("drag", function (event) {
+      // Find the element at the current mouse position
+      const node = document.elementFromPoint(
+        event.sourceEvent.clientX,
+        event.sourceEvent.clientY,
+      );
+      if (node == previousCounty) {
+        return;
+      }
+      // If the node is a county, highlight it
+      if (node && d3.select(node).classed("county")) {
+        // Set the county variable to the selected node
+        var county = d3.select(node);
+
+        // Set the county to the opposite of its current state
+        county.classed("active", activateAbility);
+
+        // Fill with color that we started out in for drag
+        county.style("fill", dragColor);
+
+        // Get the data with the county name, and update the checklist
+        var countyData = county.datum();
+        var countyName = countyData.properties.NAME;
+        var isActive = !activateAbility;
+        console.log(countyName);
+        updateChecklist(countyName, isActive);
+
+        // set previous county to make sure active state is not toggled multiple times for 1
+      }
+      previousCounty = node;
+    })
+    .on("end", function () {
+      // return active drag state to False
+      dragActive = false;
+    });
+
+  svg.selectAll("path").call(dragHandler);
 
   // Function for updating the checklist based on changing map clicks
   function updateChecklist(countyName, activeBool) {
     // find correct input instance
     const checkbox = document.querySelector(
-      `input[type="checkbox"][value=${countyName}]`,
+      `input[type="checkbox"][value="${countyName}"]`,
     );
 
     // check active status of county in map
@@ -114,7 +202,7 @@ d3.json(
 
     // checkboxActive relates to whether the corresponding checkbox is checked
     const checkboxActive = document.querySelector(
-      `input[type="checkbox"][value=${value}]`,
+      `input[type="checkbox"][value="${value}"]`,
     ).checked;
 
     // find the path corresponding with the county name being checked in the form
