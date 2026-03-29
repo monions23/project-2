@@ -177,9 +177,13 @@ function attachHoverEvents() {
       enrollmentTooltip.style("display", "none");
       if (!d3.select(this).classed("active")) {
         var name = d.properties.NAME;
-        var restoreColor = Object.keys(countyData).length > 0
-          ? getCountyColor(name)
-          : "#ffffff";
+        // Check school data first, then budget, then fall back to white
+        var restoreColor = "#ffffff";
+        if (Object.keys(countyData).length > 0) {
+          restoreColor = getCountyColor(name);
+        } else if (typeof budgetData !== "undefined" && Object.keys(budgetData).length > 0) {
+          restoreColor = getBudgetCountyColor(name);
+        }
         d3.select(this).transition().duration(200).style("fill", restoreColor);
       }
     });
