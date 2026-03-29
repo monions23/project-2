@@ -1,0 +1,2 @@
+Multiple datasets brainstorm
+ - Give some datasets hatching/patterns with different colors based on attribute 
