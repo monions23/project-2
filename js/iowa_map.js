@@ -6,6 +6,16 @@ var previousCounty = "";
 var dragColor = "";
 var activateAbility = false;
 
+// Returns the correct resting color for a county.
+// If school.js has loaded enrollment data, use that color.
+// Otherwise fall back to white (the default blank map state).
+function getBaseColor(countyName) {
+  if (typeof countyTotals !== "undefined" && countyTotals[countyName]) {
+    return getColorForEnrollment(countyTotals[countyName]);
+  }
+  return "#ffffff";
+}
+
 const svg = d3
   .select("#iowa-map")
   .append("svg")
@@ -89,7 +99,7 @@ d3.json(
         // If becoming active, add to activeCounties
         activeCounties.add(d.properties.NAME);
       } else {
-        d3.select(this).style("fill", "#FFFFFF");
+        d3.select(this).style("fill", getBaseColor(d.properties.NAME));
 
         // If becoming inactive, delete from activeCounties
         activeCounties.delete(d.properties.NAME);
@@ -206,7 +216,7 @@ d3.json(
         if (checkboxActive) {
           return "#FFBC3E";
         } else {
-          return "#FFFFFF";
+          return getBaseColor(value);
         }
       });
 
