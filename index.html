@@ -17,13 +17,19 @@
       <div class="form">
         <div class="filter-by-counties">
           <div class="selectBox" onclick="toggleCounties()">
-            <label>Filter by Counties</label>
-            <div class="arrow"></div>
+            <input
+              id="county-search"
+              type="text"
+              placeholder="Search counties..."
+              style="width: auto; padding: 6px; margin-bottom: 8px"
+            />
           </div>
           <div
             id="county-list"
             style="display: none; border: 1px #dadada solid"
           >
+            <label><input type="checkbox" value="All" />All</label>
+            <hr />
             <label><input type="checkbox" value="Adair" />Adair</label>
             <label><input type="checkbox" value="Adams" />Adams</label>
             <label><input type="checkbox" value="Allamakee" />Allamakee</label>
@@ -157,36 +163,79 @@
               ><input type="checkbox" value="Finance" />County Budget</label
             >
             <label>
-              <input type="checkbox" value="Education_Enrollment" onclick="enrollmentClickHandler()" />
+              <input
+                type="checkbox"
+                value="Education_Enrollment"
+                onclick="enrollmentClickHandler()"
+              />
               Public School Enrollment
             </label>
-            <div id="enrollment-suboptions" style="display:none; margin-left:18px; padding:4px 0;">
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="radio" name="enrollment-metric" value="enrollment" checked onchange="setEnrollmentMode('enrollment')" />
+            <div
+              id="enrollment-suboptions"
+              style="display: none; margin-left: 18px; padding: 4px 0"
+            >
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="radio"
+                  name="enrollment-metric"
+                  value="enrollment"
+                  checked
+                  onchange="setEnrollmentMode('enrollment')"
+                />
                 Total enrollment
               </label>
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="radio" name="enrollment-metric" value="pct_hispanic" onchange="setEnrollmentMode('pct_hispanic')" />
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="radio"
+                  name="enrollment-metric"
+                  value="pct_hispanic"
+                  onchange="setEnrollmentMode('pct_hispanic')"
+                />
                 % Hispanic students
               </label>
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="radio" name="enrollment-metric" value="pct_black" onchange="setEnrollmentMode('pct_black')" />
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="radio"
+                  name="enrollment-metric"
+                  value="pct_black"
+                  onchange="setEnrollmentMode('pct_black')"
+                />
                 % Black students
               </label>
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="radio" name="enrollment-metric" value="pct_asian" onchange="setEnrollmentMode('pct_asian')" />
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="radio"
+                  name="enrollment-metric"
+                  value="pct_asian"
+                  onchange="setEnrollmentMode('pct_asian')"
+                />
                 % Asian students
               </label>
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="radio" name="enrollment-metric" value="pct_white" onchange="setEnrollmentMode('pct_white')" />
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="radio"
+                  name="enrollment-metric"
+                  value="pct_white"
+                  onchange="setEnrollmentMode('pct_white')"
+                />
                 % White students
               </label>
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="radio" name="enrollment-metric" value="pct_native" onchange="setEnrollmentMode('pct_native')" />
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="radio"
+                  name="enrollment-metric"
+                  value="pct_native"
+                  onchange="setEnrollmentMode('pct_native')"
+                />
                 % Native American students
               </label>
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="radio" name="enrollment-metric" value="pct_multirace" onchange="setEnrollmentMode('pct_multirace')" />
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="radio"
+                  name="enrollment-metric"
+                  value="pct_multirace"
+                  onchange="setEnrollmentMode('pct_multirace')"
+                />
                 % Multi-race students
               </label>
             </div>
@@ -200,7 +249,6 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://unpkg.com/topojson-client@3"></script>
   <script src="https://unpkg.com/papaparse@latest/papaparse.min.js"></script>
-
 
   <!-- Custom Scripts -->
   <script src="js/filtering.js"></script>
