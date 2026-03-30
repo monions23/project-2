@@ -177,14 +177,20 @@ function attachHoverEvents() {
       enrollmentTooltip.style("display", "none");
       if (!d3.select(this).classed("active")) {
         var name = d.properties.NAME;
-        var restoreColor = Object.keys(countyData).length > 0
-          ? getCountyColor(name)
-          : "#ffffff";
+        // Check school data first, then budget, then fall back to white
+        var restoreColor = "#ffffff";
+        if (Object.keys(countyData).length > 0) {
+          restoreColor = getCountyColor(name);
+        } else if (typeof budgetData !== "undefined" && Object.keys(budgetData).length > 0) {
+          restoreColor = getBudgetCountyColor(name);
+        } else if (typeof liquorData !== "undefined" && Object.keys(liquorData).length > 0) {
+          restoreColor = getLiquorCountyColor(name);
+        }
         d3.select(this).transition().duration(200).style("fill", restoreColor);
       }
     });
 }
-
+ 
 //  whenever the user switches between from enrollment to demographic breakdowns, repaint the map with the new color scheme.
 function repaintMap() {
   svg.selectAll("path").each(function(d) {
