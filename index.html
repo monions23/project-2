@@ -153,15 +153,43 @@
           </div>
         </div>
 
+
         <div class="choose-data">
           <div class="selectBox" onclick="toggleData()">
             <label>Choose Data</label>
             <div class="arrow"></div>
           </div>
           <div id="data-list" style="display: none; border: 1px #dadada solid">
-            <label
-              ><input type="checkbox" value="Finance" />County Budget</label
-            >
+            <label>
+              <input type="checkbox" value="Finance" onclick="budgetClickHandler()" />
+              County Budget
+            </label>
+            <div id="budget-suboptions" style="display:none; margin-left:18px; padding:4px 0;">
+              <label style="display:block; font-size:12px; padding:2px 0;">
+                <input type="radio" name="budget-metric" value="total" checked onchange="setBudgetMode('total')" />
+                Total expenditures
+              </label>
+              <label style="display:block; font-size:12px; padding:2px 0;">
+                <input type="radio" name="budget-metric" value="safety" onchange="setBudgetMode('safety')" />
+                Public safety &amp; legal
+              </label>
+              <label style="display:block; font-size:12px; padding:2px 0;">
+                <input type="radio" name="budget-metric" value="health" onchange="setBudgetMode('health')" />
+                Physical health &amp; social
+              </label>
+              <label style="display:block; font-size:12px; padding:2px 0;">
+                <input type="radio" name="budget-metric" value="roads" onchange="setBudgetMode('roads')" />
+                Roads &amp; transportation
+              </label>
+              <label style="display:block; font-size:12px; padding:2px 0;">
+                <input type="radio" name="budget-metric" value="admin" onchange="setBudgetMode('admin')" />
+                Administration
+              </label>
+              <label style="display:block; font-size:12px; padding:2px 0;">
+                <input type="radio" name="budget-metric" value="education" onchange="setBudgetMode('education')" />
+                Environment &amp; education
+              </label>
+            </div>
             <label>
               <input
                 type="checkbox"
@@ -239,7 +267,21 @@
                 % Multi-race students
               </label>
             </div>
-            <label><input type="checkbox" value="Liquor" />Liquor Sales</label>
+            <label>
+              <input type="checkbox" value="Liquor" onclick="liquorClickHandler()" />
+              Liquor Sales
+            </label>
+            <div id="liquor-suboptions" style="display:none; margin-left:18px; padding:4px 0;">
+              <label style="display:block; font-size:12px; padding:2px 0;">
+                <input type="radio" name="liquor-metric" value="sales" checked onchange="setLiquorMode('sales')" />
+                Total sales ($)
+              </label>
+              <label style="display:block; font-size:12px; padding:2px 0;">
+                <input type="radio" name="liquor-metric" value="category" onchange="setLiquorMode('category')" />
+                Most popular spirit type (by bottles sold)
+              </label>
+            
+            </div>
           </div>
         </div>
       </div>
@@ -254,4 +296,6 @@
   <script src="js/filtering.js"></script>
   <script src="js/iowa_map.js"></script>
   <script src="js/school.js"></script>
+  <script src="js/budget.js"></script>
+  <script src="js/liquor.js"></script>
 </html>
