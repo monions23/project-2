@@ -218,7 +218,21 @@
                 % Multi-race students
               </label>
             </div>
-            <label><input type="checkbox" value="Liquor" />Liquor Sales</label>
+            <label>
+              <input type="checkbox" value="Liquor" onclick="liquorClickHandler()" />
+              Liquor Sales
+            </label>
+            <div id="liquor-suboptions" style="display:none; margin-left:18px; padding:4px 0;">
+              <label style="display:block; font-size:12px; padding:2px 0;">
+                <input type="radio" name="liquor-metric" value="sales" checked onchange="setLiquorMode('sales')" />
+                Total sales ($)
+              </label>
+              <label style="display:block; font-size:12px; padding:2px 0;">
+                <input type="radio" name="liquor-metric" value="category" onchange="setLiquorMode('category')" />
+                Most popular spirit type (by bottles sold)
+              </label>
+            
+            </div>
           </div>
         </div>
       </div>
@@ -235,4 +249,5 @@
   <script src="js/iowa_map.js"></script>
   <script src="js/school.js"></script>
   <script src="js/budget.js"></script>
+  <script src="js/liquor.js"></script>
 </html>

@@ -183,12 +183,14 @@ function attachHoverEvents() {
           restoreColor = getCountyColor(name);
         } else if (typeof budgetData !== "undefined" && Object.keys(budgetData).length > 0) {
           restoreColor = getBudgetCountyColor(name);
+        } else if (typeof liquorData !== "undefined" && Object.keys(liquorData).length > 0) {
+          restoreColor = getLiquorCountyColor(name);
         }
         d3.select(this).transition().duration(200).style("fill", restoreColor);
       }
     });
 }
-
+ 
 //  whenever the user switches between from enrollment to demographic breakdowns, repaint the map with the new color scheme.
 function repaintMap() {
   svg.selectAll("path").each(function(d) {
