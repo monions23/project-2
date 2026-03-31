@@ -99,31 +99,33 @@ function getColorForMultiRace(pct) {
   return "#FDF8EC";
 }
 
-// color dispatcher 
-function getCountyColor(countyName) {
+// color dispatcher
+function getCountyColor(countyName, mode) {
   if (!countyData[countyName]) return "#ffffff";
   var d = countyData[countyName];
-  if (currentMode === "enrollment")    return getColorForEnrollment(d.total);
-  if (currentMode === "pct_hispanic")  return getColorForHispanic(d.pctHispanic);
-  if (currentMode === "pct_black")     return getColorForBlack(d.pctBlack);
-  if (currentMode === "pct_asian")     return getColorForAsian(d.pctAsian);
-  if (currentMode === "pct_white")     return getColorForWhite(d.pctWhite);
-  if (currentMode === "pct_native")    return getColorForNative(d.pctNative);
-  if (currentMode === "pct_multirace") return getColorForMultiRace(d.pctMultiRace);
+  var m = mode || currentMode;
+  if (m === "enrollment")    return getColorForEnrollment(d.total);
+  if (m === "pct_hispanic")  return getColorForHispanic(d.pctHispanic);
+  if (m === "pct_black")     return getColorForBlack(d.pctBlack);
+  if (m === "pct_asian")     return getColorForAsian(d.pctAsian);
+  if (m === "pct_white")     return getColorForWhite(d.pctWhite);
+  if (m === "pct_native")    return getColorForNative(d.pctNative);
+  if (m === "pct_multirace") return getColorForMultiRace(d.pctMultiRace);
   return "#ffffff";
 }
 
 // Tooltip label dispatcher
-function getTooltipLine(countyName) {
+function getTooltipLine(countyName, mode) {
   if (!countyData[countyName]) return "No data";
   var d = countyData[countyName];
-  if (currentMode === "enrollment")    return "PK-12 Enrollment: <strong>" + d.total.toLocaleString() + "</strong>";
-  if (currentMode === "pct_hispanic")  return "Hispanic students: <strong>" + d.pctHispanic.toFixed(1) + "%</strong>";
-  if (currentMode === "pct_black")     return "Black students: <strong>" + d.pctBlack.toFixed(1) + "%</strong>";
-  if (currentMode === "pct_asian")     return "Asian students: <strong>" + d.pctAsian.toFixed(1) + "%</strong>";
-  if (currentMode === "pct_white")     return "White students: <strong>" + d.pctWhite.toFixed(1) + "%</strong>";
-  if (currentMode === "pct_native")    return "Native American students: <strong>" + d.pctNative.toFixed(1) + "%</strong>";
-  if (currentMode === "pct_multirace") return "Multi-race students: <strong>" + d.pctMultiRace.toFixed(1) + "%</strong>";
+  var m = mode || currentMode;
+  if (m === "enrollment")    return "PK-12 Enrollment: <strong>" + d.total.toLocaleString() + "</strong>";
+  if (m === "pct_hispanic")  return "Hispanic students: <strong>" + d.pctHispanic.toFixed(1) + "%</strong>";
+  if (m === "pct_black")     return "Black students: <strong>" + d.pctBlack.toFixed(1) + "%</strong>";
+  if (m === "pct_asian")     return "Asian students: <strong>" + d.pctAsian.toFixed(1) + "%</strong>";
+  if (m === "pct_white")     return "White students: <strong>" + d.pctWhite.toFixed(1) + "%</strong>";
+  if (m === "pct_native")    return "Native American students: <strong>" + d.pctNative.toFixed(1) + "%</strong>";
+  if (m === "pct_multirace") return "Multi-race students: <strong>" + d.pctMultiRace.toFixed(1) + "%</strong>";
   return "No data";
 }
 
@@ -162,9 +164,13 @@ function attachHoverEvents() {
       }
       if (Object.keys(countyData).length > 0) {
         var name = d.properties.NAME;
+        var lines = [];
+        document.querySelectorAll('input[name="enrollment-metric"]:checked').forEach(function(cb) {
+          lines.push(getTooltipLine(name, cb.value));
+        });
         enrollmentTooltip
           .style("display", "block")
-          .html("<strong>" + name + " County</strong><br>" + getTooltipLine(name));
+          .html("<strong>" + name + " County</strong><br>" + (lines.length > 0 ? lines.join("<br>") : getTooltipLine(name)));
       }
     })
     .on("mousemove.school", function (event) {
@@ -177,36 +183,60 @@ function attachHoverEvents() {
       enrollmentTooltip.style("display", "none");
       if (!d3.select(this).classed("active")) {
         var name = d.properties.NAME;
-        // Check school data first, then budget, then fall back to white
-        var restoreColor = "#ffffff";
-        if (Object.keys(countyData).length > 0) {
-          restoreColor = getCountyColor(name);
-        } else if (typeof budgetData !== "undefined" && Object.keys(budgetData).length > 0) {
-          restoreColor = getBudgetCountyColor(name);
-        } else if (typeof liquorData !== "undefined" && Object.keys(liquorData).length > 0) {
-          restoreColor = getLiquorCountyColor(name);
-        }
-        d3.select(this).transition().duration(200).style("fill", restoreColor);
+        d3.select(this).transition().duration(200).style("fill", getBlendedColor(name));
       }
     });
 }
  
 //  whenever the user switches between from enrollment to demographic breakdowns, repaint the map with the new color scheme.
 function repaintMap() {
-  svg.selectAll("path").each(function(d) {
-    if (!d || !d.properties) return;
-    var name = d.properties.NAME;
-    if (!d3.select(this).classed("active")) {
-      d3.select(this).style("fill", getCountyColor(name));
-    }
-  });
+  repaintWithBlend();
 }
 
-// index.html calls this when user clicks on enrollment checkbox or demographic breakdown 
+// index.html calls this when user clicks on enrollment checkbox or demographic breakdown
 // radio buttons. It updates the currentMode and repaints the map with the new color scheme.
 function setEnrollmentMode(mode) {
   currentMode = mode;
-  repaintMap();
+  registerLayer("school:" + mode, _schoolLayerLabel(mode), _schoolLegendColors(mode));
+  repaintWithBlend();
+}
+
+// Called from onchange on sub-metric checkboxes; registers one layer per checked metric
+// so the bivariate legend renders a proper 3×3 grid when 2 metrics are active.
+function refreshSchoolLayer() {
+  unregisterLayerGroup("school");
+  var checked = document.querySelectorAll('input[name="enrollment-metric"]:checked');
+  if (checked.length === 0) return;
+  currentMode = checked[0].value;
+  checked.forEach(function(cb) {
+    registerLayer("school:" + cb.value, _schoolLayerLabel(cb.value), _schoolLegendColors(cb.value));
+  });
+  repaintWithBlend();
+}
+
+// Returns representative [low, mid, high] colors for the given (or current) enrollment mode.
+function _schoolLegendColors(mode) {
+  var m = mode || currentMode;
+  if (m === "enrollment")    return [_RED1,    _RED4,    _RED8];
+  if (m === "pct_hispanic")  return ["#FAF4FF", "#B966EE", "#4A0080"];
+  if (m === "pct_black")     return ["#EEF7FE", "#4D9EE0", "#003366"];
+  if (m === "pct_asian")     return ["#F0FBF1", "#33CC33", "#004D00"];
+  if (m === "pct_white")     return ["#E0F9F9", "#33CCCC", "#003D3D"];
+  if (m === "pct_native")    return ["#FDF0E0", "#E89030", "#7A3B00"];
+  if (m === "pct_multirace") return ["#FDF8EC", "#DDBB44", "#4D3300"];
+  return [_RED1, _RED4, _RED8];
+}
+
+function _schoolLayerLabel(mode) {
+  var m = mode || currentMode;
+  if (m === "enrollment")    return "School Enrollment";
+  if (m === "pct_hispanic")  return "% Hispanic students";
+  if (m === "pct_black")     return "% Black students";
+  if (m === "pct_asian")     return "% Asian students";
+  if (m === "pct_white")     return "% White students";
+  if (m === "pct_native")    return "% Native American";
+  if (m === "pct_multirace") return "% Multi-race students";
+  return "School Enrollment";
 }
 
 // csv formatting is a little weird so we have to do some processing to get it into a more usable form.
@@ -263,8 +293,9 @@ function enrollmentClickHandler() {
     countyTotals = {};
     countyData   = {};
     currentMode  = "enrollment";
-    d3.selectAll("path").style("fill", "#ffffff");
+    unregisterLayerGroup("school");
     document.getElementById("enrollment-suboptions").style.display = "none";
+    repaintWithBlend();
     return;
   }
 
@@ -279,7 +310,8 @@ function enrollmentClickHandler() {
 
     document.getElementById("enrollment-suboptions").style.display = "block";
 
-    repaintMap();
+    registerLayer("school:enrollment", _schoolLayerLabel("enrollment"), _schoolLegendColors("enrollment"));
+    repaintWithBlend();
 
     console.log("[school.js] Loaded. Polk:", countyData["Polk"].total, "| Polk % white:", countyData["Polk"].pctWhite.toFixed(1) + "%");
   });

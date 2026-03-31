@@ -58,19 +58,21 @@ function categorizeSpirit(itemName) {
   return "Other";
 }
 
-// Master color dispatcher 
-function getLiquorCountyColor(countyName) {
+// Master color dispatcher
+function getLiquorCountyColor(countyName, mode) {
   if (!liquorData[countyName]) return "#ffffff";
   var d = liquorData[countyName];
-  if (liquorMode === "sales")    return getColorForSales(d.totalSales);
-  if (liquorMode === "category") return CATEGORY_COLORS[d.topCategory] || "#888780";
+  var m = mode || liquorMode;
+  if (m === "sales")    return getColorForSales(d.totalSales);
+  if (m === "category") return CATEGORY_COLORS[d.topCategory] || "#888780";
   return "#ffffff";
 }
 
-// Tooltip label dispatcher 
-function getLiquorTooltipLine(countyName) {
+// Tooltip label dispatcher
+function getLiquorTooltipLine(countyName, mode) {
   if (!liquorData[countyName]) return "No data";
   var d = liquorData[countyName];
+  var m = mode || liquorMode;
 
   function fmt(val) {
     if (val >= 1000000) return "$" + (val / 1000000).toFixed(1) + "M";
@@ -78,11 +80,11 @@ function getLiquorTooltipLine(countyName) {
     return "$" + val.toFixed(0);
   }
 
-  if (liquorMode === "sales") {
+  if (m === "sales") {
     return "Liquor sales: <strong>" + fmt(d.totalSales) + "</strong>" +
            "<br>Bottles sold: <strong>" + d.totalBottles.toLocaleString() + "</strong>";
   }
-  if (liquorMode === "category") {
+  if (m === "category") {
     return "Top spirit: <strong>" + d.topCategory + "</strong>" +
            "<br>Best seller: <strong>" + d.topItem + "</strong>";
   }
@@ -124,9 +126,13 @@ function attachLiquorHoverEvents() {
       }
       if (Object.keys(liquorData).length > 0) {
         var name = d.properties.NAME;
+        var lines = [];
+        document.querySelectorAll('input[name="liquor-metric"]:checked').forEach(function(cb) {
+          lines.push(getLiquorTooltipLine(name, cb.value));
+        });
         liquorTooltip
           .style("display", "block")
-          .html("<strong>" + name + " County</strong><br>" + getLiquorTooltipLine(name));
+          .html("<strong>" + name + " County</strong><br>" + (lines.length > 0 ? lines.join("<br>") : getLiquorTooltipLine(name)));
       }
     })
     .on("mousemove.liquor", function (event) {
@@ -139,10 +145,7 @@ function attachLiquorHoverEvents() {
       liquorTooltip.style("display", "none");
       if (!d3.select(this).classed("active")) {
         var name = d.properties.NAME;
-        var restoreColor = Object.keys(liquorData).length > 0
-          ? getLiquorCountyColor(name)
-          : "#ffffff";
-        d3.select(this).transition().duration(200).style("fill", restoreColor);
+        d3.select(this).transition().duration(200).style("fill", getBlendedColor(name));
       }
     });
 }
@@ -155,21 +158,44 @@ function removeLiquorHoverEvents() {
   if (liquorTooltip) liquorTooltip.style("display", "none");
 }
 
-//  Repaint map 
+//  Repaint map (blended with other active layers)
 function repaintLiquorMap() {
-  svg.selectAll("path").each(function(d) {
-    if (!d || !d.properties) return;
-    var name = d.properties.NAME;
-    if (!d3.select(this).classed("active")) {
-      d3.select(this).style("fill", getLiquorCountyColor(name));
-    }
-  });
+  repaintWithBlend();
 }
 
 // Called when user picks a sub-category
 function setLiquorMode(mode) {
   liquorMode = mode;
-  repaintLiquorMap();
+  registerLayer("liquor:" + mode, _liquorLayerLabel(mode), _liquorLegendColors(mode));
+  repaintWithBlend();
+}
+
+// Called from onchange on sub-metric checkboxes; registers one layer per checked metric
+// so the bivariate legend renders a proper 3×3 grid when 2 metrics are active.
+function refreshLiquorLayer() {
+  unregisterLayerGroup("liquor");
+  var checked = document.querySelectorAll('input[name="liquor-metric"]:checked');
+  if (checked.length === 0) return;
+  liquorMode = checked[0].value;
+  checked.forEach(function(cb) {
+    registerLayer("liquor:" + cb.value, _liquorLayerLabel(cb.value), _liquorLegendColors(cb.value));
+  });
+  repaintWithBlend();
+}
+
+// Returns representative [low, mid, high] colors for the given (or current) liquor mode.
+function _liquorLegendColors(mode) {
+  var m = mode || liquorMode;
+  if (m === "sales")    return ["#FDF2E0", "#D97E20", "#3D1C00"];
+  if (m === "category") return ["#888780", "#8B0000", "#1A3A6B"];
+  return ["#FDF2E0", "#D97E20", "#3D1C00"];
+}
+
+function _liquorLayerLabel(mode) {
+  var m = mode || liquorMode;
+  if (m === "sales")    return "Liquor Sales ($)";
+  if (m === "category") return "Top Spirit Type";
+  return "Liquor Sales";
 }
 
 //  city→county lookup from iowa_zip_lookup.csv 
@@ -250,9 +276,10 @@ function liquorClickHandler() {
   if (!isChecked) {
     liquorData = {};
     liquorMode = "sales";
-    d3.selectAll("path").style("fill", "#ffffff");
+    unregisterLayerGroup("liquor");
     document.getElementById("liquor-suboptions").style.display = "none";
     removeLiquorHoverEvents();
+    repaintWithBlend();
     return;
   }
 
@@ -268,13 +295,13 @@ function liquorClickHandler() {
     liquorData   = buildLiquorData(liquorRows, cityToCounty);
     liquorMode   = "sales";
 
-    // Reset category to first option
     var radios = document.querySelectorAll('input[name="liquor-metric"]');
     if (radios.length > 0) radios[0].checked = true;
 
     document.getElementById("liquor-suboptions").style.display = "block";
 
-    repaintLiquorMap();
+    registerLayer("liquor:sales", _liquorLayerLabel("sales"), _liquorLegendColors("sales"));
+    repaintWithBlend();
     attachLiquorHoverEvents();
 
     console.log("[liquor.js] Loaded.", Object.keys(liquorData).length, "counties.");
