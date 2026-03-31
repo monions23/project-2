@@ -1,7 +1,21 @@
-## Progress So Far
+# DAT.IA
 
-Meredith is working on a Figma mock-up.
+## Project Description
 
-Will is working on downloading and pre-processing the data.
+include a screenshot of your app
 
-Both are brainstorming ideas for extra visualizations beyond a base map.
+## Installation Steps
+
+what to do when cloning repo for first time
+
+## Usage Instructions
+
+steps to deploy locally and any steps needed to deploy to web (I'm guessing create a new branch?)
+
+## Credits
+
+@ all members
+
+## Project Roadmap
+
+checklist of new features
