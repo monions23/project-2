@@ -104,7 +104,7 @@ function getBlendedColor(countyName) {
       });
   }
 
-  if (colors.length === 0) return "#ffffff";
+  if (colors.length === 0) return noDataColor;
   var result = colors[0];
   for (var i = 1; i < colors.length; i++)
     result = multiplyBlend(result, colors[i]);

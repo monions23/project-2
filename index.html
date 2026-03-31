@@ -153,7 +153,6 @@
           </div>
         </div>
 
-
         <div class="choose-data">
           <div class="selectBox" onclick="toggleData()">
             <label>Choose Data</label>
@@ -161,32 +160,69 @@
           </div>
           <div id="data-list" style="display: none; border: 1px #dadada solid">
             <label>
-              <input type="checkbox" value="Finance" onclick="budgetClickHandler()" />
+              <input
+                type="checkbox"
+                value="Finance"
+                onclick="budgetClickHandler()"
+              />
               County Budget
             </label>
-            <div id="budget-suboptions" style="display:none; margin-left:18px; padding:4px 0;">
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="checkbox" name="budget-metric" value="total" onchange="refreshBudgetLayer()" />
+            <div
+              id="budget-suboptions"
+              style="display: none; margin-left: 18px; padding: 4px 0"
+            >
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="checkbox"
+                  name="budget-metric"
+                  value="total"
+                  onchange="refreshBudgetLayer()"
+                />
                 Total expenditures
               </label>
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="checkbox" name="budget-metric" value="safety" onchange="refreshBudgetLayer()" />
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="checkbox"
+                  name="budget-metric"
+                  value="safety"
+                  onchange="refreshBudgetLayer()"
+                />
                 Public safety &amp; legal
               </label>
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="checkbox" name="budget-metric" value="health" onchange="refreshBudgetLayer()" />
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="checkbox"
+                  name="budget-metric"
+                  value="health"
+                  onchange="refreshBudgetLayer()"
+                />
                 Physical health &amp; social
               </label>
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="checkbox" name="budget-metric" value="roads" onchange="refreshBudgetLayer()" />
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="checkbox"
+                  name="budget-metric"
+                  value="roads"
+                  onchange="refreshBudgetLayer()"
+                />
                 Roads &amp; transportation
               </label>
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="checkbox" name="budget-metric" value="admin" onchange="refreshBudgetLayer()" />
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="checkbox"
+                  name="budget-metric"
+                  value="admin"
+                  onchange="refreshBudgetLayer()"
+                />
                 Administration
               </label>
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="checkbox" name="budget-metric" value="education" onchange="refreshBudgetLayer()" />
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="checkbox"
+                  name="budget-metric"
+                  value="education"
+                  onchange="refreshBudgetLayer()"
+                />
                 Environment &amp; education
               </label>
             </div>
@@ -198,50 +234,104 @@
               />
               Public School Enrollment
             </label>
-            <div id="enrollment-suboptions" style="display:none; margin-left:18px; padding:4px 0;">
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="checkbox" name="enrollment-metric" value="enrollment" onchange="refreshSchoolLayer()" />
+            <div
+              id="enrollment-suboptions"
+              style="display: none; margin-left: 18px; padding: 4px 0"
+            >
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="checkbox"
+                  name="enrollment-metric"
+                  value="enrollment"
+                  onchange="refreshSchoolLayer()"
+                />
                 Total enrollment
               </label>
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="checkbox" name="enrollment-metric" value="pct_hispanic" onchange="refreshSchoolLayer()" />
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="checkbox"
+                  name="enrollment-metric"
+                  value="pct_hispanic"
+                  onchange="refreshSchoolLayer()"
+                />
                 % Hispanic students
               </label>
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="checkbox" name="enrollment-metric" value="pct_black" onchange="refreshSchoolLayer()" />
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="checkbox"
+                  name="enrollment-metric"
+                  value="pct_black"
+                  onchange="refreshSchoolLayer()"
+                />
                 % Black students
               </label>
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="checkbox" name="enrollment-metric" value="pct_asian" onchange="refreshSchoolLayer()" />
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="checkbox"
+                  name="enrollment-metric"
+                  value="pct_asian"
+                  onchange="refreshSchoolLayer()"
+                />
                 % Asian students
               </label>
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="checkbox" name="enrollment-metric" value="pct_white" onchange="refreshSchoolLayer()" />
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="checkbox"
+                  name="enrollment-metric"
+                  value="pct_white"
+                  onchange="refreshSchoolLayer()"
+                />
                 % White students
               </label>
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="checkbox" name="enrollment-metric" value="pct_native" onchange="refreshSchoolLayer()" />
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="checkbox"
+                  name="enrollment-metric"
+                  value="pct_native"
+                  onchange="refreshSchoolLayer()"
+                />
                 % Native American students
               </label>
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="checkbox" name="enrollment-metric" value="pct_multirace" onchange="refreshSchoolLayer()" />
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="checkbox"
+                  name="enrollment-metric"
+                  value="pct_multirace"
+                  onchange="refreshSchoolLayer()"
+                />
                 % Multi-race students
               </label>
             </div>
             <label>
-              <input type="checkbox" value="Liquor" onclick="liquorClickHandler()" />
+              <input
+                type="checkbox"
+                value="Liquor"
+                onclick="liquorClickHandler()"
+              />
               Liquor Sales
             </label>
-            <div id="liquor-suboptions" style="display:none; margin-left:18px; padding:4px 0;">
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="checkbox" name="liquor-metric" value="sales" onchange="refreshLiquorLayer()" />
+            <div
+              id="liquor-suboptions"
+              style="display: none; margin-left: 18px; padding: 4px 0"
+            >
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="checkbox"
+                  name="liquor-metric"
+                  value="sales"
+                  onchange="refreshLiquorLayer()"
+                />
                 Total sales ($)
               </label>
-              <label style="display:block; font-size:12px; padding:2px 0;">
-                <input type="checkbox" name="liquor-metric" value="category" onchange="refreshLiquorLayer()" />
+              <label style="display: block; font-size: 12px; padding: 2px 0">
+                <input
+                  type="checkbox"
+                  name="liquor-metric"
+                  value="category"
+                  onchange="refreshLiquorLayer()"
+                />
                 Most popular spirit type (by bottles sold)
               </label>
-
             </div>
           </div>
         </div>
@@ -254,9 +344,9 @@
   <script src="https://unpkg.com/papaparse@latest/papaparse.min.js"></script>
 
   <!-- Custom Scripts -->
+  <script src="js/iowa_map.js"></script>
   <script src="js/filtering.js"></script>
   <script src="js/bivariate.js"></script>
-  <script src="js/iowa_map.js"></script>
   <script src="js/school.js"></script>
   <script src="js/budget.js"></script>
   <script src="js/liquor.js"></script>
