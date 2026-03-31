@@ -348,8 +348,7 @@ function makeBarChart(canvasId, titleId, title, labels, datasetLabel, values) {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
-      aspectRatio: 1.8,
+      maintainAspectRatio: false,
       plugins: { legend: { display: true } },
       scales: { y: { beginAtZero: true } }
     }
@@ -363,8 +362,7 @@ function makeLineChart(canvasId, titleId, title, labels, datasets) {
     data: { labels: labels, datasets: datasets },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
-      aspectRatio: 1.8,
+      maintainAspectRatio: false,
       plugins: { legend: { display: true } },
       scales: { y: { beginAtZero: true } }
     }
@@ -387,8 +385,7 @@ function makeDoughnutChart(canvasId, titleId, title, labels, values) {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
-      aspectRatio: 1.2,
+      maintainAspectRatio: false,
       plugins: { legend: { position: "bottom" } }
     }
   });
@@ -401,8 +398,7 @@ function makeRadarChart(canvasId, titleId, title, labels, datasets) {
     data: { labels: labels, datasets: datasets },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
-      aspectRatio: 1.2,
+      maintainAspectRatio: false,
       scales: { r: { beginAtZero: true, min: 0, max: 100 } }
     }
   });
@@ -542,8 +538,7 @@ function renderCombinedCharts(selectedDatasets, selectedCounties) {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
-      aspectRatio: 1.8,
+      maintainAspectRatio: false,
       scales: { y: { beginAtZero: true, max: 100 } }
     }
   });
