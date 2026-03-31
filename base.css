@@ -1,0 +1,118 @@
+.grid-map-form {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+}
+
+#iowa-map {
+  height: auto;
+  padding: 20px;
+  border: 1px solid grey;
+  grid-column: span 7;
+}
+
+.form {
+  height: auto;
+  border: 1px solid grey;
+  border-left: none;
+  grid-column: span 3;
+}
+
+/*
+Source - https://stackoverflow.com/a/27547021
+Posted by vitfo, modified by community. See post 'Timeline' for change history
+Retrieved 2026-03-25, License - CC BY-SA 3.0
+*/
+
+.multiselect {
+  width: 200px;
+}
+
+.selectBox {
+  position: relative;
+}
+
+.selectBox select {
+  width: 100%;
+  font-weight: bold;
+}
+
+.overSelect {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+#county-list {
+  display: none;
+  border: 1px #dadada solid;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+#county-list label {
+  display: block;
+}
+
+#county-list label:hover {
+  background-color: #1e90ff;
+}
+
+#data-list {
+  display: none;
+  border: 1px #dadada solid;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+#data-list label {
+  display: block;
+}
+
+#data-list label:hover {
+  background-color: #1e90ff;
+}
+
+
+.charts-section {
+  width: 95%;
+  max-width: 1400px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.charts-section h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.chart-card {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.chart-card h3 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.chart-card canvas {
+  width: 100% !important;
+  height: 320px !important;
+}
