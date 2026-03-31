@@ -14,7 +14,8 @@ include a screenshot of your app
 
 ## Usage Instructions
 
-steps to deploy locally and any steps needed to deploy to web (I'm guessing create a new branch?)
+Start a local server through your terminal and the open the https that it gives you (http://localhost:3000)
+For a web page create a new branch push your changes: then use githubpages to deploy and see the website 
 
 ## Credits
 
