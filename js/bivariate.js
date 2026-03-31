@@ -279,3 +279,80 @@ function refreshBivariateLegend() {
 
   _enforceLayerLimit();
 }
+
+// ── Master Tooltip ─────────────────────────────────────────────────────────────
+// One tooltip for the whole map. It reads whichever datasets are currently active
+// and combines their lines automatically.
+//
+// API your teammate can use:
+//   showMasterTooltip(countyName, x, y)  — call on mouseover (x/y from d3.pointer)
+//   moveMasterTooltip(x, y)              — call on mousemove
+//   hideMasterTooltip()                  — call on mouseout
+
+var masterTooltip = null;
+
+function _ensureMasterTooltip() {
+  if (masterTooltip) return masterTooltip;
+  masterTooltip = d3.select("#iowa-map")
+    .append("div")
+    .attr("id", "master-tooltip")
+    .style("position",       "absolute")
+    .style("pointer-events", "none")
+    .style("display",        "none")
+    .style("background",     "white")
+    .style("border",         "1px solid #ccc")
+    .style("border-radius",  "4px")
+    .style("padding",        "6px 10px")
+    .style("font-size",      "13px")
+    .style("color",          "#222")
+    .style("z-index",        "10");
+  return masterTooltip;
+}
+
+// Builds the tooltip HTML by collecting one line from each active dataset.
+function buildMasterTooltipHTML(countyName) {
+  var lines = [];
+
+  if (typeof countyData !== "undefined" && Object.keys(countyData).length > 0) {
+    document.querySelectorAll('input[name="enrollment-metric"]:checked').forEach(function(cb) {
+      lines.push(getTooltipLine(countyName, cb.value));
+    });
+  }
+
+  if (typeof budgetData !== "undefined" && Object.keys(budgetData).length > 0) {
+    document.querySelectorAll('input[name="budget-metric"]:checked').forEach(function(cb) {
+      lines.push(getBudgetTooltipLine(countyName, cb.value));
+    });
+  }
+
+  if (typeof liquorData !== "undefined" && Object.keys(liquorData).length > 0) {
+    document.querySelectorAll('input[name="liquor-metric"]:checked').forEach(function(cb) {
+      lines.push(getLiquorTooltipLine(countyName, cb.value));
+    });
+  }
+
+  if (lines.length === 0) return null;
+  return "<strong>" + countyName + " County</strong><br>" + lines.join("<br>");
+}
+
+function showMasterTooltip(countyName, x, y) {
+  var html = buildMasterTooltipHTML(countyName);
+  if (!html) return;
+  _ensureMasterTooltip()
+    .style("display", "block")
+    .style("left",    x + 14 + "px")
+    .style("top",     y - 28 + "px")
+    .html(html);
+}
+
+function moveMasterTooltip(x, y) {
+  if (masterTooltip) {
+    masterTooltip
+      .style("left", x + 14 + "px")
+      .style("top",  y - 28 + "px");
+  }
+}
+
+function hideMasterTooltip() {
+  if (masterTooltip) masterTooltip.style("display", "none");
+}

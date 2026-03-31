@@ -111,84 +111,8 @@ function getLiquorTooltipLine(countyName, mode) {
 }
 
 //  Globals
-var liquorTooltip = null;
 // liquorData[countyName] = { totalSales, totalBottles, topCategory, topItem }
 var liquorData = {};
-
-// Tooltip
-function createLiquorTooltip() {
-  if (liquorTooltip) return;
-  liquorTooltip = d3
-    .select("#iowa-map")
-    .style("position", "relative")
-    .append("div")
-    .style("position", "absolute")
-    .style("pointer-events", "none")
-    .style("display", "none")
-    .style("background", "white")
-    .style("border", "1px solid #ccc")
-    .style("border-radius", "4px")
-    .style("padding", "6px 10px")
-    .style("font-size", "13px")
-    .style("color", "#222")
-    .style("z-index", "10");
-}
-
-//  Hover functions
-function attachLiquorHoverEvents() {
-  createLiquorTooltip();
-  var countiesData = getActiveCounties();
-
-  svg
-    .selectAll("path")
-    .filter((d) => countiesData.has(d.properties.NAME))
-    .on("mouseover.liquor", function (event, d) {
-      if (Object.keys(liquorData).length > 0) {
-        var name = d.properties.NAME;
-        var lines = [];
-        document
-          .querySelectorAll('input[name="liquor-metric"]:checked')
-          .forEach(function (cb) {
-            lines.push(getLiquorTooltipLine(name, cb.value));
-          });
-        liquorTooltip
-          .style("display", "block")
-          .html(
-            "<strong>" +
-              name +
-              " County</strong><br>" +
-              (lines.length > 0
-                ? lines.join("<br>")
-                : getLiquorTooltipLine(name)),
-          );
-      }
-    })
-    .on("mousemove.liquor", function (event) {
-      var coords = d3.pointer(event, d3.select("#iowa-map").node());
-      liquorTooltip
-        .style("left", coords[0] + 14 + "px")
-        .style("top", coords[1] - 28 + "px");
-    })
-    .on("mouseout.liquor", function (_event, d) {
-      liquorTooltip.style("display", "none");
-      if (!d3.select(this).classed("active")) {
-        var name = d.properties.NAME;
-        d3.select(this)
-          .transition()
-          .duration(200)
-          .style("fill", getBlendedColor(name).style("opacity", 1));
-      }
-    });
-}
-
-function removeLiquorHoverEvents() {
-  svg
-    .selectAll("path")
-    .on("mouseover.liquor", null)
-    .on("mousemove.liquor", null)
-    .on("mouseout.liquor", null);
-  if (liquorTooltip) liquorTooltip.style("display", "none");
-}
 
 //  Repaint map (blended with other active layers)
 function repaintLiquorMap() {
@@ -321,42 +245,33 @@ function liquorClickHandler() {
     liquorMode = "sales";
     unregisterLayerGroup("liquor");
     document.getElementById("liquor-suboptions").style.display = "none";
-    removeLiquorHoverEvents();
     repaintWithBlend();
     return;
   }
 
   // Load both CSVs
-  Promise.all([d3.csv("iowa_zip_lookup.csv"), d3.csv("Liquor_Sales.csv")]).then(
-    function (results) {
-      var zipData = results[0];
-      var liquorRows = results[1];
+  Promise.all([
+    d3.csv("iowa_zip_lookup.csv"),
+    d3.csv("Liquor_Sales.csv"),
+  ]).then(function(results) {
+    var zipData    = results[0];
+    var liquorRows = results[1];
 
-      cityToCounty = buildCityLookup(zipData);
-      liquorData = buildLiquorData(liquorRows, cityToCounty);
-      liquorMode = "sales";
+    cityToCounty = buildCityLookup(zipData);
+    liquorData   = buildLiquorData(liquorRows, cityToCounty);
+    liquorMode   = "sales";
 
-      var radios = document.querySelectorAll('input[name="liquor-metric"]');
-      if (radios.length > 0) radios[0].checked = true;
+    var radios = document.querySelectorAll('input[name="liquor-metric"]');
+    if (radios.length > 0) radios[0].checked = true;
 
-      document.getElementById("liquor-suboptions").style.display = "block";
+    document.getElementById("liquor-suboptions").style.display = "block";
 
-      registerLayer(
-        "liquor:sales",
-        _liquorLayerLabel("sales"),
-        _liquorLegendColors("sales"),
-      );
-      repaintWithBlend();
-      attachLiquorHoverEvents();
+    registerLayer("liquor:sales", _liquorLayerLabel("sales"), _liquorLegendColors("sales"));
+    repaintWithBlend();
 
-      console.log(
-        "[liquor.js] Loaded.",
-        Object.keys(liquorData).length,
-        "counties.",
-      );
-      console.log("[liquor.js] Polk:", liquorData["Polk"]);
-    },
-  );
+    console.log("[liquor.js] Loaded.", Object.keys(liquorData).length, "counties.");
+    console.log("[liquor.js] Polk:", liquorData["Polk"]);
+  });
 }
 
 //  Poll for map paths

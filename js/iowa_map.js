@@ -57,22 +57,28 @@ d3.json(
   // Mouseover functions
   svg
     .selectAll("path")
-    .on("mouseover.base", function (d) {
+    .on("mouseover.base", function (event) {
       // only function if drag isn't currently active
       if (dragActive) {
         return;
       }
+      let countyName = getCountyName(d3.select(this));
       // Highlight if not already clicked
       if (!d3.select(this).classed("active")) {
-        let countyName = getCountyName(d3.select(this));
         d3.select(this)
           .transition()
           .duration(100)
           .style("fill", getBaseColor(countyName))
           .attr("opacity", 1);
       }
+      var coords = d3.pointer(event, d3.select("#iowa-map").node());
+      showMasterTooltip(countyName, coords[0], coords[1]);
     })
-    .on("mouseout.base", function (d) {
+    .on("mousemove.base", function (event) {
+      var coords = d3.pointer(event, d3.select("#iowa-map").node());
+      moveMasterTooltip(coords[0], coords[1]);
+    })
+    .on("mouseout.base", function () {
       // only function if drag isn't currently active
       if (dragActive) {
         return;
@@ -85,6 +91,7 @@ d3.json(
           .style("fill", noDataColor)
           .attr("opacity", 1);
       }
+      hideMasterTooltip();
     })
     .on("click", function (event, d) {
       // only function if drag isn't currently active

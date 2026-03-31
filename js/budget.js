@@ -126,85 +126,7 @@ function getBudgetTooltipLine(countyName, mode) {
 }
 
 // Globals
-var budgetTooltip = null;
 var budgetData = {}; // budgetData[countyName] = { total, safety, health, roads, admin, education }
-
-// Tooltip
-function createBudgetTooltip() {
-  if (budgetTooltip) return;
-  budgetTooltip = d3
-    .select("#iowa-map")
-    .style("position", "relative")
-    .append("div")
-    .style("position", "absolute")
-    .style("pointer-events", "none")
-    .style("display", "none")
-    .style("background", "white")
-    .style("border", "1px solid #ccc")
-    .style("border-radius", "4px")
-    .style("padding", "6px 10px")
-    .style("font-size", "13px")
-    .style("color", "#222")
-    .style("z-index", "10");
-}
-
-// Hover events
-// Used namespaced events (.budget) so school.js hover events (.school)
-// don't conflict, each file owns its own namespace.
-function attachBudgetHoverEvents() {
-  createBudgetTooltip();
-
-  svg
-    .selectAll("path")
-    .filter((d) => countiesData.has(d.properties.NAME))
-    .on("mouseover.budget", function (event, d) {
-      if (Object.keys(budgetData).length > 0) {
-        var name = d.properties.NAME;
-        var lines = [];
-        document
-          .querySelectorAll('input[name="budget-metric"]:checked')
-          .forEach(function (cb) {
-            lines.push(getBudgetTooltipLine(name, cb.value));
-          });
-        budgetTooltip
-          .style("display", "block")
-          .html(
-            "<strong>" +
-              name +
-              " County</strong><br>" +
-              (lines.length > 0
-                ? lines.join("<br>")
-                : getBudgetTooltipLine(name)),
-          );
-      }
-    })
-    .on("mousemove.budget", function (event) {
-      var coords = d3.pointer(event, d3.select("#iowa-map").node());
-      budgetTooltip
-        .style("left", coords[0] + 14 + "px")
-        .style("top", coords[1] - 28 + "px");
-    })
-    .on("mouseout.budget", function (_event, d) {
-      budgetTooltip.style("display", "none");
-      if (!d3.select(this).classed("active")) {
-        var name = d.properties.NAME;
-        d3.select(this)
-          .transition()
-          .duration(200)
-          .style("fill", getBlendedColor(name));
-      }
-    });
-}
-
-// Removes budget hover events ( when checkbox is unchecked)
-function removeBudgetHoverEvents() {
-  svg
-    .selectAll("path")
-    .on("mouseover.budget", null)
-    .on("mousemove.budget", null)
-    .on("mouseout.budget", null);
-  if (budgetTooltip) budgetTooltip.style("display", "none");
-}
 
 //  Repaints all counties with the current budget mode (blended with other active layers)
 function repaintBudgetMap() {
@@ -330,7 +252,6 @@ function budgetClickHandler() {
     budgetMode = "total";
     unregisterLayerGroup("budget");
     document.getElementById("budget-suboptions").style.display = "none";
-    removeBudgetHoverEvents();
     repaintWithBlend();
     return;
   }
@@ -352,7 +273,6 @@ function budgetClickHandler() {
       _budgetLegendColors("total"),
     );
     repaintWithBlend();
-    attachBudgetHoverEvents();
 
     console.log(
       "[budget.js] Loaded. Polk:",

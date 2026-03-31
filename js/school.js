@@ -116,112 +116,37 @@ function getCountyColor(countyName) {
 function getTooltipLine(countyName, mode) {
   if (!countyData[countyName]) return "No data";
   var d = countyData[countyName];
-  if (currentMode === "enrollment")
+  var m = mode || currentMode;
+  if (m === "enrollment")
     return (
       "PK-12 Enrollment: <strong>" + d.total.toLocaleString() + "</strong>"
     );
-  if (currentMode === "pct_hispanic")
+  if (m === "pct_hispanic")
     return (
       "Hispanic students: <strong>" + d.pctHispanic.toFixed(1) + "%</strong>"
     );
-  if (currentMode === "pct_black")
+  if (m === "pct_black")
     return "Black students: <strong>" + d.pctBlack.toFixed(1) + "%</strong>";
-  if (currentMode === "pct_asian")
+  if (m === "pct_asian")
     return "Asian students: <strong>" + d.pctAsian.toFixed(1) + "%</strong>";
-  if (currentMode === "pct_white")
+  if (m === "pct_white")
     return "White students: <strong>" + d.pctWhite.toFixed(1) + "%</strong>";
-  if (currentMode === "pct_native")
+  if (m === "pct_native")
     return (
       "Native American students: <strong>" +
       d.pctNative.toFixed(1) +
       "%</strong>"
     );
-  if (currentMode === "pct_multirace")
+  if (m === "pct_multirace")
     return (
       "Multi-race students: <strong>" + d.pctMultiRace.toFixed(1) + "%</strong>"
     );
   return "No data";
 }
 // Globals for iowa_map.js compatibility
-var enrollmentTooltip = null;
 var countyTotals = {};
 var countyData = {}; // countyData[name] = { total, pctBlack, pctHispanic, ... }
-
-// Tooltip
-function createTooltip() {
-  if (enrollmentTooltip) return;
-  enrollmentTooltip = d3
-    .select("#iowa-map")
-    .style("position", "relative")
-    .append("div")
-    .style("position", "absolute")
-    .style("pointer-events", "none")
-    .style("display", "none")
-    .style("background", "white")
-    .style("border", "1px solid #ccc")
-    .style("border-radius", "4px")
-    .style("padding", "6px 10px")
-    .style("font-size", "13px")
-    .style("color", "#222")
-    .style("z-index", "10");
-}
-// Hover events
-function attachHoverEvents() {
-  createTooltip();
-  var countiesData = getActiveCounties();
-  svg
-    .selectAll("path")
-    .filter((d) => countiesData.has(d.properties.NAME))
-    .on("mouseover.school", function (event, d) {
-      if (Object.keys(countyData).length > 0) {
-        var name = d.properties.NAME;
-        var lines = [];
-        document
-          .querySelectorAll('input[name="enrollment-metric"]:checked')
-          .forEach(function (cb) {
-            lines.push(getTooltipLine(name, cb.value));
-          });
-        enrollmentTooltip
-          .style("display", "block")
-          .html(
-            "<strong>" + name + " County</strong><br>" + getTooltipLine(name),
-          );
-      }
-    })
-    .on("mousemove.school", function (event) {
-      var coords = d3.pointer(event, d3.select("#iowa-map").node());
-      enrollmentTooltip
-        .style("left", coords[0] + 14 + "px")
-        .style("top", coords[1] - 28 + "px");
-    })
-    .on("mouseout.school", function (event, d) {
-      enrollmentTooltip.style("display", "none");
-      if (!d3.select(this).classed("active")) {
-        var name = d.properties.NAME;
-        // Check school data first, then budget, then fall back to white
-        var restoreColor = noDataColor;
-        if (Object.keys(countyData).length > 0) {
-          restoreColor = getCountyColor(name);
-        } else if (
-          typeof budgetData !== "undefined" &&
-          Object.keys(budgetData).length > 0
-        ) {
-          restoreColor = getBudgetCountyColor(name);
-        } else if (
-          typeof liquorData !== "undefined" &&
-          Object.keys(liquorData).length > 0
-        ) {
-          restoreColor = getLiquorCountyColor(name);
-        }
-        d3.select(this)
-          .transition()
-          .duration(200)
-          .style("fill", restoreColor)
-          .style("opacity", 1);
-      }
-    });
-}
-
+ 
 //  whenever the user switches between from enrollment to demographic breakdowns, repaint the map with the new color scheme.
 function repaintMap() {
   var countiesData = getActiveCounties();
@@ -392,12 +317,3 @@ function enrollmentClickHandler() {
   });
 }
 
-// Attach hover as soon as the map paths exists
-// iowa_map.js loads the TopoJSON asyncronously
-var hoverPoll = setInterval(function () {
-  if (typeof svg !== "undefined" && svg.selectAll("path").size() > 0) {
-    attachHoverEvents();
-    clearInterval(hoverPoll);
-    console.log("[school.js] Hover events attached.");
-  }
-}, 100);
