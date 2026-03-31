@@ -100,7 +100,7 @@ function getColorForMultiRace(pct) {
 
 // color dispatcher
 function getCountyColor(countyName) {
-  if (!countyData[countyName]) return "#ffffff";
+  if (!countyData[countyName]) return noDataColor;
   var d = countyData[countyName];
   if (currentMode === "enrollment") return getColorForEnrollment(d.total);
   if (currentMode === "pct_hispanic") return getColorForHispanic(d.pctHispanic);
@@ -110,7 +110,7 @@ function getCountyColor(countyName) {
   if (currentMode === "pct_native") return getColorForNative(d.pctNative);
   if (currentMode === "pct_multirace")
     return getColorForMultiRace(d.pctMultiRace);
-  return "#ffffff";
+  return noDataColor;
 }
 // Tooltip label dispatcher
 function getTooltipLine(countyName, mode) {
@@ -199,7 +199,7 @@ function attachHoverEvents() {
       if (!d3.select(this).classed("active")) {
         var name = d.properties.NAME;
         // Check school data first, then budget, then fall back to white
-        var restoreColor = "#ffffff";
+        var restoreColor = noDataColor;
         if (Object.keys(countyData).length > 0) {
           restoreColor = getCountyColor(name);
         } else if (
@@ -359,7 +359,7 @@ function enrollmentClickHandler() {
     countyTotals = {};
     countyData = {};
     currentMode = "enrollment";
-    d3.selectAll("path").style("fill", "#ffffff");
+    d3.selectAll("path").style("fill", noDataColor);
     document.getElementById("enrollment-suboptions").style.display = "none";
     repaintWithBlend();
     return;

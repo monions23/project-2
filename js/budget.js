@@ -85,7 +85,7 @@ function getColorForEducation(val) {
 
 // Master color dispatcher
 function getBudgetCountyColor(countyName, mode) {
-  if (!budgetData[countyName]) return "#ffffff";
+  if (!budgetData[countyName]) return noDataColor;
   var d = budgetData[countyName];
   var m = mode || budgetMode;
   if (m === "total") return getColorForTotal(d.total);
@@ -94,7 +94,7 @@ function getBudgetCountyColor(countyName, mode) {
   if (m === "roads") return getColorForRoads(d.roads);
   if (m === "admin") return getColorForAdmin(d.admin);
   if (m === "education") return getColorForEducation(d.education);
-  return "#ffffff";
+  return noDataColor;
 }
 
 //  Tooltip label dispatcher

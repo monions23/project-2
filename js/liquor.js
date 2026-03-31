@@ -67,12 +67,12 @@ function categorizeSpirit(itemName) {
 
 // Master color dispatcher
 function getLiquorCountyColor(countyName, mode) {
-  if (!liquorData[countyName]) return "#ffffff";
+  if (!liquorData[countyName]) return noDataColor;
   var d = liquorData[countyName];
   var m = mode || liquorMode;
   if (m === "sales") return getColorForSales(d.totalSales);
   if (m === "category") return CATEGORY_COLORS[d.topCategory] || "#888780";
-  return "#ffffff";
+  return noDataColor;
 }
 
 // Tooltip label dispatcher
