@@ -6,7 +6,12 @@ include a screenshot of your app
 
 ## Installation Steps
 
-what to do when cloning repo for first time
+1) Clone the repository
+     git clone https://github.com/monions23/project-2.git
+     cd project-2
+
+2) 
+
 
 ## Usage Instructions
 
