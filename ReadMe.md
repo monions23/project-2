@@ -8,9 +8,8 @@ include a screenshot of your app
 
 1) Clone the repository
      git clone https://github.com/monions23/project-2.git
-     cd project-2
 
-2) 
+     cd project-2
 
 
 ## Usage Instructions
