@@ -142,12 +142,12 @@ function _ensureLegend() {
     .attr("id", "bivariate-legend")
     .style("position", "absolute")
     .style("bottom", "16px")
-    .style("right", "16px")
+    .style("left", "16px")
     .style("background", "rgba(255,255,255,0.93)")
     .style("border", "1px solid #bbb")
     .style("border-radius", "4px")
     .style("padding", "8px 10px")
-    .style("font-size", "11px")
+    .style("font-size", "14px")
     .style("color", "#222")
     .style("line-height", "1.4")
     .style("display", "none")
@@ -293,19 +293,20 @@ var masterTooltip = null;
 
 function _ensureMasterTooltip() {
   if (masterTooltip) return masterTooltip;
-  masterTooltip = d3.select("#iowa-map")
+  masterTooltip = d3
+    .select("#iowa-map")
     .append("div")
     .attr("id", "master-tooltip")
-    .style("position",       "absolute")
+    .style("position", "absolute")
     .style("pointer-events", "none")
-    .style("display",        "none")
-    .style("background",     "white")
-    .style("border",         "1px solid #ccc")
-    .style("border-radius",  "4px")
-    .style("padding",        "6px 10px")
-    .style("font-size",      "13px")
-    .style("color",          "#222")
-    .style("z-index",        "10");
+    .style("display", "none")
+    .style("background", "white")
+    .style("border", "1px solid #ccc")
+    .style("border-radius", "4px")
+    .style("padding", "6px 10px")
+    .style("font-size", "13px")
+    .style("color", "#222")
+    .style("z-index", "10");
   return masterTooltip;
 }
 
@@ -314,21 +315,27 @@ function buildMasterTooltipHTML(countyName) {
   var lines = [];
 
   if (typeof countyData !== "undefined" && Object.keys(countyData).length > 0) {
-    document.querySelectorAll('input[name="enrollment-metric"]:checked').forEach(function(cb) {
-      lines.push(getTooltipLine(countyName, cb.value));
-    });
+    document
+      .querySelectorAll('input[name="enrollment-metric"]:checked')
+      .forEach(function (cb) {
+        lines.push(getTooltipLine(countyName, cb.value));
+      });
   }
 
   if (typeof budgetData !== "undefined" && Object.keys(budgetData).length > 0) {
-    document.querySelectorAll('input[name="budget-metric"]:checked').forEach(function(cb) {
-      lines.push(getBudgetTooltipLine(countyName, cb.value));
-    });
+    document
+      .querySelectorAll('input[name="budget-metric"]:checked')
+      .forEach(function (cb) {
+        lines.push(getBudgetTooltipLine(countyName, cb.value));
+      });
   }
 
   if (typeof liquorData !== "undefined" && Object.keys(liquorData).length > 0) {
-    document.querySelectorAll('input[name="liquor-metric"]:checked').forEach(function(cb) {
-      lines.push(getLiquorTooltipLine(countyName, cb.value));
-    });
+    document
+      .querySelectorAll('input[name="liquor-metric"]:checked')
+      .forEach(function (cb) {
+        lines.push(getLiquorTooltipLine(countyName, cb.value));
+      });
   }
 
   if (lines.length === 0) return null;
@@ -340,16 +347,14 @@ function showMasterTooltip(countyName, x, y) {
   if (!html) return;
   _ensureMasterTooltip()
     .style("display", "block")
-    .style("left",    x + 14 + "px")
-    .style("top",     y - 28 + "px")
+    .style("left", x + 14 + "px")
+    .style("top", y - 28 + "px")
     .html(html);
 }
 
 function moveMasterTooltip(x, y) {
   if (masterTooltip) {
-    masterTooltip
-      .style("left", x + 14 + "px")
-      .style("top",  y - 28 + "px");
+    masterTooltip.style("left", x + 14 + "px").style("top", y - 28 + "px");
   }
 }
 

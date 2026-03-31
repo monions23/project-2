@@ -12,13 +12,15 @@ const noDataColor = "#FFFFFF";
 // Falls back to white when no datasets are loaded.
 function getBaseColor(countyName) {
   var noneChecked =
-    document.querySelector('#data-list input[type="checkbox"]:checked') == null;
-  console.log(noneChecked);
+    document.querySelector(
+      '#data-list .checkbox-header input[type="checkbox"]:checked',
+    ) == null;
   if (noneChecked) {
     return "#FFBC3E";
-  } else if (!noneChecked && typeof getBlendedColor === "function")
+  } else if (typeof getBlendedColor === "function")
     return getBlendedColor(countyName);
   else {
+    console.log("no color");
     return noDataColor;
   }
 }
@@ -54,6 +56,43 @@ d3.json(
     .attr("fill", noDataColor)
     .attr("stroke", "#000000");
 
+  // Form functionality - event listener for changing form input
+  d3.select("#county-list")
+    .selectAll("input")
+    .on("change", function (event) {
+      // find the value being changed
+      const newValue = event.currentTarget.value;
+
+      // update the map with that value
+      updateMap(newValue);
+    });
+
+  d3.select("#data-list")
+    .selectAll("input")
+    .on("change", function (event) {
+      // find the value being changed
+      var countiesData = getActiveCounties();
+      svg
+        .selectAll("path")
+        .filter((d) => countiesData.has(d.properties.NAME))
+        .each(function (d) {
+          if (!d || !d.properties) return;
+          if (d3.select(this).classed("active")) {
+            d3.select(this)
+              .style("opacity", 1)
+              .style("fill", getBaseColor(d.properties.NAME));
+          }
+        });
+    });
+
+  // Function for implementing all values on load
+  var allBox = document.querySelector('input[value="All"]');
+  if (allBox) {
+    allBox.checked = true;
+    // 2. Run the update logic to sync the Map and the other Checkboxes
+    updateMap("All");
+  }
+
   // Mouseover functions
   svg
     .selectAll("path")
@@ -63,6 +102,7 @@ d3.json(
         return;
       }
       let countyName = getCountyName(d3.select(this));
+
       // Highlight if not already clicked
       if (!d3.select(this).classed("active")) {
         d3.select(this)
@@ -70,6 +110,10 @@ d3.json(
           .duration(100)
           .style("fill", getBaseColor(countyName))
           .attr("opacity", 1);
+      } else {
+        // Get current color and store it if not already stored - for hover effect
+        let currentColor = d3.select(this).style("fill");
+        d3.select(this).attr("data-original-color", currentColor);
       }
       var coords = d3.pointer(event, d3.select("#iowa-map").node());
       showMasterTooltip(countyName, coords[0], coords[1]);
@@ -83,6 +127,7 @@ d3.json(
       if (dragActive) {
         return;
       }
+
       // Revert only if not clicked
       if (!d3.select(this).classed("active")) {
         d3.select(this)
@@ -103,9 +148,6 @@ d3.json(
       let countyName = getCountyName(d3.select(this));
 
       toggleCounty(countyName, isActive);
-
-      console.log("Clicked path data:", d);
-      console.log(activeCounties);
     });
 
   // Drag functionality
@@ -114,6 +156,9 @@ d3.json(
     .on("start.drag", function () {
       // Set dragActive state to true
       dragActive = true;
+
+      // Reset previous county
+      previousCounty = "";
 
       // Get the first node, and calculate what drag value will be (activate or deactivate)
       // Active boolean corresponds to whether county will be activated or deactivated
@@ -128,18 +173,22 @@ d3.json(
       if (node == previousCounty) {
         return;
       }
-      // If the node is a county, highlight it
-      if (node && d3.select(node).classed("county")) {
+      previousCounty = node;
+      var targetState = !firstNodeActive;
+
+      // If the node is a county, highlight it (while ensuring it's not already in the state we want)
+      if (
+        node &&
+        d3.select(node).classed("county") &&
+        d3.select(node).classed("active") !== targetState
+      ) {
         var county = d3.select(node);
         var countyName = getCountyName(county);
 
         toggleCounty(countyName, firstNodeActive);
 
-        console.log(activeCounties);
-
         // set previous county to make sure active state is not toggled multiple times for 1
       }
-      previousCounty = node;
     })
     .on("end.drag", function () {
       // return active drag state to False
@@ -169,17 +218,6 @@ d3.json(
     syncAllCheckbox();
   }
 
-  // Form functionality - event listener for changing form input
-  d3.select("#county-list")
-    .selectAll("input")
-    .on("change", function (event) {
-      // find the value being changed
-      const newValue = event.currentTarget.value;
-
-      // update the map with that value
-      updateMap(newValue);
-    });
-
   // Function for updating the map based on changing form values
   function updateMap(value) {
     // select the path for the corresponding county
@@ -206,9 +244,10 @@ d3.json(
 
       d3.selectAll("path")
         .classed("active", checkboxActive)
-        .style("fill", function () {
+        .style("fill", function (d) {
           if (checkboxActive) {
-            return getBaseColor(value);
+            // Use the actual county name from the map data (d.properties.NAME)
+            return getBaseColor(d.properties.NAME);
           } else {
             return noDataColor;
           }
@@ -259,26 +298,33 @@ d3.json(
 
   /* activates a county */
   function activateCounty(name) {
+    console.log("activating");
     activeCounties.add(name);
     getCountyPath(name)
       .classed("active", true)
       .style("fill", getBaseColor(name));
 
     updateChecklist(name, true);
+    updateCharts();
   }
 
   /* deactivates a county */
   function deactivateCounty(name) {
+    console.log("deactivating");
     activeCounties.delete(name);
     getCountyPath(name).classed("active", false).style("fill", noDataColor);
 
     updateChecklist(name, false);
+    updateCharts();
   }
 
   /* toggles a county between active and inactive based off of a boolean */
   function toggleCounty(name, currActive) {
     if (!currActive) activateCounty(name);
     else deactivateCounty(name);
+
+    console.log(activeCounties);
+    // update the charts below the map with whatever the new selection is
   }
 
   /* get the county name based on a specific node */
