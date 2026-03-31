@@ -9,7 +9,13 @@ var firstNodeActive = false;
 // Returns the blended resting color for a county across all active datasets.
 // Falls back to white when no datasets are loaded.
 function getBaseColor(countyName) {
-  if (typeof getBlendedColor === "function") return getBlendedColor(countyName);
+  var noneChecked =
+    document.querySelector('#data-list input[type="checkbox"]:checked') == null;
+  console.log(noneChecked);
+  if (noneChecked) {
+    return "#FFBC3E";
+  } else if (typeof getBlendedColor === "function")
+    return getBlendedColor(countyName);
   return "#ffffff";
 }
 

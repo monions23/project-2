@@ -112,7 +112,6 @@ function getCountyColor(countyName) {
     return getColorForMultiRace(d.pctMultiRace);
   return "#ffffff";
 }
-
 // Tooltip label dispatcher
 function getTooltipLine(countyName, mode) {
   if (!countyData[countyName]) return "No data";
@@ -143,7 +142,6 @@ function getTooltipLine(countyName, mode) {
     );
   return "No data";
 }
-
 // Globals for iowa_map.js compatibility
 var enrollmentTooltip = null;
 var countyTotals = {};
@@ -167,7 +165,6 @@ function createTooltip() {
     .style("color", "#222")
     .style("z-index", "10");
 }
-
 // Hover events
 function attachHoverEvents() {
   createTooltip();
@@ -179,9 +176,11 @@ function attachHoverEvents() {
       if (Object.keys(countyData).length > 0) {
         var name = d.properties.NAME;
         var lines = [];
-        document.querySelectorAll('input[name="enrollment-metric"]:checked').forEach(function(cb) {
-          lines.push(getTooltipLine(name, cb.value));
-        });
+        document
+          .querySelectorAll('input[name="enrollment-metric"]:checked')
+          .forEach(function (cb) {
+            lines.push(getTooltipLine(name, cb.value));
+          });
         enrollmentTooltip
           .style("display", "block")
           .html(
@@ -199,11 +198,30 @@ function attachHoverEvents() {
       enrollmentTooltip.style("display", "none");
       if (!d3.select(this).classed("active")) {
         var name = d.properties.NAME;
-        d3.select(this).transition().duration(200).style("fill", getBlendedColor(name));
+        // Check school data first, then budget, then fall back to white
+        var restoreColor = "#ffffff";
+        if (Object.keys(countyData).length > 0) {
+          restoreColor = getCountyColor(name);
+        } else if (
+          typeof budgetData !== "undefined" &&
+          Object.keys(budgetData).length > 0
+        ) {
+          restoreColor = getBudgetCountyColor(name);
+        } else if (
+          typeof liquorData !== "undefined" &&
+          Object.keys(liquorData).length > 0
+        ) {
+          restoreColor = getLiquorCountyColor(name);
+        }
+        d3.select(this)
+          .transition()
+          .duration(200)
+          .style("fill", restoreColor)
+          .style("opacity", 1);
       }
     });
 }
- 
+
 //  whenever the user switches between from enrollment to demographic breakdowns, repaint the map with the new color scheme.
 function repaintMap() {
   var countiesData = getActiveCounties();
@@ -226,7 +244,12 @@ function repaintMap() {
 // radio buttons. It updates the currentMode and repaints the map with the new color scheme.
 function setEnrollmentMode(mode) {
   currentMode = mode;
-  registerLayer("school:" + mode, _schoolLayerLabel(mode), _schoolLegendColors(mode));
+  repaintMap();
+  registerLayer(
+    "school:" + mode,
+    _schoolLayerLabel(mode),
+    _schoolLegendColors(mode),
+  );
   repaintWithBlend();
 }
 
@@ -234,11 +257,17 @@ function setEnrollmentMode(mode) {
 // so the bivariate legend renders a proper 3×3 grid when 2 metrics are active.
 function refreshSchoolLayer() {
   unregisterLayerGroup("school");
-  var checked = document.querySelectorAll('input[name="enrollment-metric"]:checked');
+  var checked = document.querySelectorAll(
+    'input[name="enrollment-metric"]:checked',
+  );
   if (checked.length === 0) return;
   currentMode = checked[0].value;
-  checked.forEach(function(cb) {
-    registerLayer("school:" + cb.value, _schoolLayerLabel(cb.value), _schoolLegendColors(cb.value));
+  checked.forEach(function (cb) {
+    registerLayer(
+      "school:" + cb.value,
+      _schoolLayerLabel(cb.value),
+      _schoolLegendColors(cb.value),
+    );
   });
   repaintWithBlend();
 }
@@ -246,24 +275,24 @@ function refreshSchoolLayer() {
 // Returns representative [low, mid, high] colors for the given (or current) enrollment mode.
 function _schoolLegendColors(mode) {
   var m = mode || currentMode;
-  if (m === "enrollment")    return [_RED1,    _RED4,    _RED8];
-  if (m === "pct_hispanic")  return ["#FAF4FF", "#B966EE", "#4A0080"];
-  if (m === "pct_black")     return ["#EEF7FE", "#4D9EE0", "#003366"];
-  if (m === "pct_asian")     return ["#F0FBF1", "#33CC33", "#004D00"];
-  if (m === "pct_white")     return ["#E0F9F9", "#33CCCC", "#003D3D"];
-  if (m === "pct_native")    return ["#FDF0E0", "#E89030", "#7A3B00"];
+  if (m === "enrollment") return [_RED1, _RED4, _RED8];
+  if (m === "pct_hispanic") return ["#FAF4FF", "#B966EE", "#4A0080"];
+  if (m === "pct_black") return ["#EEF7FE", "#4D9EE0", "#003366"];
+  if (m === "pct_asian") return ["#F0FBF1", "#33CC33", "#004D00"];
+  if (m === "pct_white") return ["#E0F9F9", "#33CCCC", "#003D3D"];
+  if (m === "pct_native") return ["#FDF0E0", "#E89030", "#7A3B00"];
   if (m === "pct_multirace") return ["#FDF8EC", "#DDBB44", "#4D3300"];
   return [_RED1, _RED4, _RED8];
 }
 
 function _schoolLayerLabel(mode) {
   var m = mode || currentMode;
-  if (m === "enrollment")    return "School Enrollment";
-  if (m === "pct_hispanic")  return "% Hispanic students";
-  if (m === "pct_black")     return "% Black students";
-  if (m === "pct_asian")     return "% Asian students";
-  if (m === "pct_white")     return "% White students";
-  if (m === "pct_native")    return "% Native American";
+  if (m === "enrollment") return "School Enrollment";
+  if (m === "pct_hispanic") return "% Hispanic students";
+  if (m === "pct_black") return "% Black students";
+  if (m === "pct_asian") return "% Asian students";
+  if (m === "pct_white") return "% White students";
+  if (m === "pct_native") return "% Native American";
   if (m === "pct_multirace") return "% Multi-race students";
   return "School Enrollment";
 }
@@ -347,7 +376,11 @@ function enrollmentClickHandler() {
 
     document.getElementById("enrollment-suboptions").style.display = "block";
 
-    registerLayer("school:enrollment", _schoolLayerLabel("enrollment"), _schoolLegendColors("enrollment"));
+    registerLayer(
+      "school:enrollment",
+      _schoolLayerLabel("enrollment"),
+      _schoolLegendColors("enrollment"),
+    );
     repaintWithBlend();
 
     console.log(
