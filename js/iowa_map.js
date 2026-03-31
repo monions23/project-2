@@ -1,3 +1,5 @@
+window.MapEvents = new EventTarget(); // Create global event listener
+
 var activeCounties = new Set();
 var dragActive = false;
 
@@ -10,8 +12,23 @@ var firstNodeActive = false;
 // If school.js has loaded enrollment data, use that color.
 // Otherwise fall back to white (the default blank map state).
 function getBaseColor(countyName) {
-  if (typeof countyTotals !== "undefined" && countyTotals[countyName]) {
-    return getColorForEnrollment(countyTotals[countyName]);
+  console.log(liquorData);
+  if (
+    typeof countyTotals !== "undefined" &&
+    Object.keys(countyTotals).length > 0
+  ) {
+    return getCountyColor(countyName);
+  } else if (
+    typeof budgetData !== "undefined" &&
+    Object.keys(budgetData).length > 0
+  ) {
+    return getBudgetCountyColor(countyName);
+  } else if (
+    typeof liquorData !== "undefined" &&
+    Object.keys(liquorData).length > 0
+  ) {
+    console.log("restoring liquor color");
+    restoreColor = getLiquorCountyColor(countyName);
   } else if (!(countyName in activeCounties)) {
     return "#FFBC3E";
   } else {
@@ -58,13 +75,19 @@ d3.json(
       if (dragActive) {
         return;
       }
+      var name = getCountyName(d3.select(this));
+
+      MapEvents.dispatchEvent(
+        new CustomEvent("map-mouseover", {
+          detail: { name },
+        }),
+      );
       // Highlight if not already clicked
       if (!d3.select(this).classed("active")) {
-        let countyName = getCountyName(d3.select(this));
         d3.select(this)
           .transition()
           .duration(100)
-          .style("fill", getBaseColor(countyName))
+          .style("fill", getBaseColor(name))
           .attr("opacity", 1);
       }
     })
@@ -73,6 +96,14 @@ d3.json(
       if (dragActive) {
         return;
       }
+
+      var name = getCountyName(d3.select(this));
+
+      MapEvents.dispatchEvent(
+        new CustomEvent("map-mouseover", {
+          detail: { name },
+        }),
+      );
       // Revert only if not clicked
       if (!d3.select(this).classed("active")) {
         d3.select(this)
@@ -87,6 +118,13 @@ d3.json(
       if (dragActive) {
         return;
       }
+      var name = getCountyName(d3.select(this));
+
+      MapEvents.dispatchEvent(
+        new CustomEvent("map-click", {
+          detail: { name },
+        }),
+      );
       // Check current active state
       const isActive = d3.select(this).classed("active");
       let countyName = getCountyName(d3.select(this));
@@ -148,7 +186,7 @@ d3.json(
     // check active status of county in map
     // if active, make sure the corresponding form input is checked
     // if not active, make sure it is not checked
-    if (!activeBool) {
+    if (activeBool) {
       checkbox.checked = true;
     } else {
       checkbox.checked = false;
@@ -167,6 +205,17 @@ d3.json(
 
       // update the map with that value
       updateMap(newValue);
+    });
+
+  // every time data list changes, ensure counties stay active
+  d3.select("#data-list")
+    .selectAll("input")
+    .on("change", function (event) {
+      // update the map with that value
+      for (activeCounty in activeCounties) {
+        console.log(activeCounty);
+        updateMap(activeCounty);
+      }
     });
 
   // Function for updating the map based on changing form values

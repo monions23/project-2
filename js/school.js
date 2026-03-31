@@ -149,25 +149,6 @@ var enrollmentTooltip = null;
 var countyTotals = {};
 var countyData = {}; // countyData[name] = { total, pctBlack, pctHispanic, ... }
 
-// Tooltip
-function createTooltip() {
-  if (enrollmentTooltip) return;
-  enrollmentTooltip = d3
-    .select("#iowa-map")
-    .style("position", "relative")
-    .append("div")
-    .style("position", "absolute")
-    .style("pointer-events", "none")
-    .style("display", "none")
-    .style("background", "white")
-    .style("border", "1px solid #ccc")
-    .style("border-radius", "4px")
-    .style("padding", "6px 10px")
-    .style("font-size", "13px")
-    .style("color", "#222")
-    .style("z-index", "10");
-}
-
 // Hover events
 function attachHoverEvents() {
   createTooltip();
@@ -199,16 +180,26 @@ function attachHoverEvents() {
         var restoreColor = "#ffffff";
         if (Object.keys(countyData).length > 0) {
           restoreColor = getCountyColor(name);
-        } else if (typeof budgetData !== "undefined" && Object.keys(budgetData).length > 0) {
+        } else if (
+          typeof budgetData !== "undefined" &&
+          Object.keys(budgetData).length > 0
+        ) {
           restoreColor = getBudgetCountyColor(name);
-        } else if (typeof liquorData !== "undefined" && Object.keys(liquorData).length > 0) {
+        } else if (
+          typeof liquorData !== "undefined" &&
+          Object.keys(liquorData).length > 0
+        ) {
           restoreColor = getLiquorCountyColor(name);
         }
-        d3.select(this).transition().duration(200).style("fill", restoreColor);
+        d3.select(this)
+          .transition()
+          .duration(200)
+          .style("fill", restoreColor)
+          .style("opacity", 1);
       }
     });
 }
- 
+
 //  whenever the user switches between from enrollment to demographic breakdowns, repaint the map with the new color scheme.
 function repaintMap() {
   var countiesData = getActiveCounties();
