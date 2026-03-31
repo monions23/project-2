@@ -115,7 +115,7 @@ Retrieved 2026-03-25, License - CC BY-SA 3.0
   margin-bottom: 10px;
 }
 
-.chart-canvas-wrap {
+.chart-container {
   position: relative;
   width: 100%;
   height: 240px;
