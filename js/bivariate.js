@@ -113,14 +113,18 @@ function getBlendedColor(countyName) {
 
 // repaint all counties based on user selection of layers
 function repaintWithBlend() {
-  svg.selectAll("path").each(function (d) {
-    if (!d || !d.properties) return;
-    if (!d3.select(this).classed("active")) {
-      d3.select(this)
-        .style("opacity", 1)
-        .style("fill", getBlendedColor(d.properties.NAME));
-    }
-  });
+  var countiesData = getActiveCounties();
+  svg
+    .selectAll("path")
+    .filter((d) => countiesData.has(d.properties.NAME))
+    .each(function (d) {
+      if (!d || !d.properties) return;
+      if (d3.select(this).classed("active")) {
+        d3.select(this)
+          .style("opacity", 1)
+          .style("fill", getBlendedColor(d.properties.NAME));
+      }
+    });
 }
 
 // ── Bivariate legend ──────────────────────────────────────────────────────────

@@ -137,13 +137,12 @@ function createLiquorTooltip() {
 //  Hover functions
 function attachLiquorHoverEvents() {
   createLiquorTooltip();
+  var countiesData = getActiveCounties();
 
   svg
     .selectAll("path")
+    .filter((d) => countiesData.has(d.properties.NAME))
     .on("mouseover.liquor", function (event, d) {
-      if (!d3.select(this).classed("active")) {
-        d3.select(this).transition().duration(100).style("fill", "#FFBC3E");
-      }
       if (Object.keys(liquorData).length > 0) {
         var name = d.properties.NAME;
         var lines = [];
@@ -177,7 +176,7 @@ function attachLiquorHoverEvents() {
         d3.select(this)
           .transition()
           .duration(200)
-          .style("fill", getBlendedColor(name));
+          .style("fill", getBlendedColor(name).style("opacity", 1));
       }
     });
 }
