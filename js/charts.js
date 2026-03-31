@@ -7,10 +7,8 @@ const DATA_FILES = {
     "Iowa_Public_School_District_Enrollment_(PreK-12_Enrollment_by_Grade,_Race_and_Gender)_20260324.csv",
   Finance:
     "County_Budgeted_Expenditures_By_Service_Area_By_Fiscal_Year_20260324.csv",
-  Liquor:
-    "Liquor_Sales.csv",
-  CityCountyMap:
-    "iowa_counties_to_cities.csv"
+  Liquor: "Liquor_Sales.csv",
+  CityCountyMap: "iowa_counties_to_cities.csv"
 };
 
 const loadedData = {
@@ -32,9 +30,11 @@ function normalizeCountyName(name) {
   let county = String(name || "").trim();
   if (!county) return "";
   if (county === "Pottawattam") county = "Pottawattamie";
-  return county.toLowerCase().replace(/\b\w/g, function (char) {
-    return char.toUpperCase();
-  });
+  return county
+    .toLowerCase()
+    .replace(/\b\w/g, function (char) {
+      return char.toUpperCase();
+    });
 }
 
 function normalizeCityName(name) {
@@ -65,15 +65,17 @@ function getSelectedDatasets() {
 }
 
 function getSelectedCounties() {
-  const selected = Array.from(document.querySelectorAll('#county-list input[type="checkbox"]:checked'))
-    .map(function (cb) {
+  const checked = Array.from(document.querySelectorAll('#county-list input[type="checkbox"]:checked')).map(
+    function (cb) {
       return cb.value;
-    })
-    .filter(function (value) {
-      return value !== "All";
-    });
+    }
+  );
 
-  return selected;
+  if (!checked.length || checked.includes("All")) {
+    return [];
+  }
+
+  return checked;
 }
 
 async function loadAllDataIfNeeded() {
@@ -97,19 +99,23 @@ function buildCityToCountyLookup(mappingRows) {
   mappingRows.forEach(function (row) {
     const cityList = String(row["City"] || "").split(",");
     const countyField = String(row["County"] || "").trim();
-    if (!countyField) return;
 
-    cityList.forEach(function (city) {
-      const cleanedCity = normalizeCityName(city);
-      if (!cleanedCity) return;
+    let countyNames = [countyField];
+    if (!countyField.includes(",") && countyField.split(/\s+/).length === 2) {
+      countyNames = countyField.split(/\s+/);
+    } else if (countyField.includes(",")) {
+      countyNames = countyField.split(",");
+    }
 
-      // map to the whole county field first
-      lookup[cleanedCity] = normalizeCountyName(countyField);
+    countyNames.forEach(function (countyName) {
+      const county = normalizeCountyName(countyName);
+      if (!county) return;
 
-      // also map each space-separated county part as a fallback for odd rows
-      countyField.split(/\s{2,}|\//).forEach(function (countyPart) {
-        const county = normalizeCountyName(countyPart);
-        if (county) lookup[cleanedCity] = county;
+      cityList.forEach(function (city) {
+        const cleanedCity = normalizeCityName(city);
+        if (cleanedCity) {
+          lookup[cleanedCity] = county;
+        }
       });
     });
   });
@@ -134,7 +140,6 @@ function keepOnlySelectedLocations(obj, selectedLocations) {
       filtered[key] = obj[key];
     }
   });
-
   return filtered;
 }
 
@@ -142,13 +147,17 @@ function normalizeSeries(obj) {
   const entries = Object.entries(obj);
   if (!entries.length) return {};
 
-  const maxValue = Math.max.apply(null, entries.map(function (entry) {
-    return entry[1];
-  }));
+  const maxValue = Math.max(
+    ...entries.map(function (entry) {
+      return entry[1];
+    })
+  );
 
   const result = {};
   entries.forEach(function (entry) {
-    result[entry[0]] = maxValue === 0 ? 0 : (entry[1] / maxValue) * 100;
+    const key = entry[0];
+    const value = entry[1];
+    result[key] = maxValue === 0 ? 0 : (value / maxValue) * 100;
   });
 
   return result;
@@ -157,14 +166,16 @@ function normalizeSeries(obj) {
 function averageOfValues(obj) {
   const values = Object.values(obj);
   if (!values.length) return 0;
-  return values.reduce(function (sum, value) {
-    return sum + value;
-  }, 0) / values.length;
+
+  return (
+    values.reduce(function (sum, value) {
+      return sum + value;
+    }, 0) / values.length
+  );
 }
 
 function schoolCountyTotals(rows) {
   const totals = {};
-
   rows.forEach(function (row) {
     let county = normalizeName(row["COUNTY NAME"]);
     if (!county) return;
@@ -174,13 +185,11 @@ function schoolCountyTotals(rows) {
     if (!totals[county]) totals[county] = 0;
     totals[county] += total;
   });
-
   return totals;
 }
 
 function schoolYearTotals(rows) {
   const totals = {};
-
   rows.forEach(function (row) {
     const year = row["School Year"];
     if (!year) return;
@@ -188,7 +197,6 @@ function schoolYearTotals(rows) {
     if (!totals[year]) totals[year] = 0;
     totals[year] += total;
   });
-
   return Object.entries(totals).sort(function (a, b) {
     return Number(a[0]) - Number(b[0]);
   });
@@ -196,18 +204,29 @@ function schoolYearTotals(rows) {
 
 function schoolRaceTotals(rows) {
   return {
-    Hispanic: d3.sum(rows, function (d) { return cleanNumber(d["Total Hispanic"]); }),
-    Black: d3.sum(rows, function (d) { return cleanNumber(d["Black Total"]); }),
-    Asian: d3.sum(rows, function (d) { return cleanNumber(d["Asian Total"]); }),
-    White: d3.sum(rows, function (d) { return cleanNumber(d["White Total"]); }),
-    "Native American": d3.sum(rows, function (d) { return cleanNumber(d["Native American Total"]); }),
-    "Multi-Race": d3.sum(rows, function (d) { return cleanNumber(d["Multi-Race Total"]); })
+    Hispanic: d3.sum(rows, function (d) {
+      return cleanNumber(d["Total Hispanic"]);
+    }),
+    Black: d3.sum(rows, function (d) {
+      return cleanNumber(d["Black Total"]);
+    }),
+    Asian: d3.sum(rows, function (d) {
+      return cleanNumber(d["Asian Total"]);
+    }),
+    White: d3.sum(rows, function (d) {
+      return cleanNumber(d["White Total"]);
+    }),
+    "Native American": d3.sum(rows, function (d) {
+      return cleanNumber(d["Native American Total"]);
+    }),
+    "Multi-Race": d3.sum(rows, function (d) {
+      return cleanNumber(d["Multi-Race Total"]);
+    })
   };
 }
 
 function financeCountyTotals(rows) {
   const totals = {};
-
   rows.forEach(function (row) {
     const county = normalizeCountyName(row["County Name"]);
     if (!county) return;
@@ -215,13 +234,11 @@ function financeCountyTotals(rows) {
     if (!totals[county]) totals[county] = 0;
     totals[county] += total;
   });
-
   return totals;
 }
 
 function financeYearTotals(rows) {
   const totals = {};
-
   rows.forEach(function (row) {
     const date = row["Fiscal Year Ending"];
     if (!date) return;
@@ -231,7 +248,6 @@ function financeYearTotals(rows) {
     if (!totals[year]) totals[year] = 0;
     totals[year] += total;
   });
-
   return Object.entries(totals).sort(function (a, b) {
     return Number(a[0]) - Number(b[0]);
   });
@@ -257,13 +273,11 @@ function financeServiceTotals(rows) {
       return cleanNumber(row[column]);
     });
   });
-
   return totals;
 }
 
 function liquorCountyTotals(rows, cityCountyLookup) {
   const totals = {};
-
   rows.forEach(function (row) {
     const city = normalizeCityName(row["City"]);
     const county = cityCountyLookup[city];
@@ -273,35 +287,25 @@ function liquorCountyTotals(rows, cityCountyLookup) {
     if (!totals[county]) totals[county] = 0;
     totals[county] += total;
   });
-
   return totals;
 }
 
 function liquorCountyTotalsForSelected(rows, cityCountyLookup, selectedCounties) {
-  const allTotals = liquorCountyTotals(rows, cityCountyLookup);
-  if (!selectedCounties.length) return allTotals;
-
-  const filtered = {};
-  Object.keys(allTotals).forEach(function (county) {
-    if (selectedCounties.includes(county)) {
-      filtered[county] = allTotals[county];
-    }
-  });
-
-  return filtered;
+  return keepOnlySelectedLocations(liquorCountyTotals(rows, cityCountyLookup), selectedCounties);
 }
 
 function liquorMonthTotals(rows) {
   const totals = {};
-
   rows.forEach(function (row) {
     const date = row["Date"];
     if (!date) return;
+
     const parsed = new Date(date);
     if (Number.isNaN(parsed.getTime())) return;
 
     const monthKey = parsed.getFullYear() + "-" + String(parsed.getMonth() + 1).padStart(2, "0");
     const total = cleanNumber(row["Sale (Dollars)"]);
+
     if (!totals[monthKey]) totals[monthKey] = 0;
     totals[monthKey] += total;
   });
@@ -313,7 +317,6 @@ function liquorMonthTotals(rows) {
 
 function liquorTopProducts(rows) {
   const totals = {};
-
   rows.forEach(function (row) {
     const product = normalizeName(row["Item Description"]);
     if (!product) return;
@@ -323,7 +326,9 @@ function liquorTopProducts(rows) {
   });
 
   return Object.entries(totals)
-    .sort(function (a, b) { return b[1] - a[1]; })
+    .sort(function (a, b) {
+      return b[1] - a[1];
+    })
     .slice(0, 10);
 }
 
@@ -333,11 +338,13 @@ function makeBarChart(canvasId, titleId, title, labels, datasetLabel, values) {
     type: "bar",
     data: {
       labels: labels,
-      datasets: [{
-        label: datasetLabel,
-        data: values,
-        borderWidth: 1
-      }]
+      datasets: [
+        {
+          label: datasetLabel,
+          data: values,
+          borderWidth: 1
+        }
+      ]
     },
     options: {
       responsive: true,
@@ -368,11 +375,13 @@ function makeDoughnutChart(canvasId, titleId, title, labels, values) {
     type: "doughnut",
     data: {
       labels: labels,
-      datasets: [{
-        label: title,
-        data: values,
-        borderWidth: 1
-      }]
+      datasets: [
+        {
+          label: title,
+          data: values,
+          borderWidth: 1
+        }
+      ]
     },
     options: {
       responsive: true,
@@ -397,8 +406,8 @@ function makeRadarChart(canvasId, titleId, title, labels, datasets) {
 
 function renderSchoolCharts(selectedCounties) {
   document.getElementById("charts-title").textContent = "Public School Enrollment Graphs";
-
   const rows = loadedData.Education_Enrollment;
+
   const countyTotals = keepOnlySelectedLocations(schoolCountyTotals(rows), selectedCounties);
   const countyTop = topEntries(countyTotals, selectedCounties.length ? selectedCounties.length : 10);
   const yearTotals = schoolYearTotals(rows);
@@ -418,12 +427,7 @@ function renderSchoolCharts(selectedCounties) {
     "chart2-title",
     "Statewide Enrollment by School Year",
     yearTotals.map(function (d) { return d[0]; }),
-    [{
-      label: "Enrollment",
-      data: yearTotals.map(function (d) { return d[1]; }),
-      tension: 0.2,
-      fill: false
-    }]
+    [{ label: "Enrollment", data: yearTotals.map(function (d) { return d[1]; }), tension: 0.2, fill: false }]
   );
 
   chart3Instance = makeDoughnutChart(
@@ -437,8 +441,8 @@ function renderSchoolCharts(selectedCounties) {
 
 function renderFinanceCharts(selectedCounties) {
   document.getElementById("charts-title").textContent = "County Budget Graphs";
-
   const rows = loadedData.Finance;
+
   const countyTotals = keepOnlySelectedLocations(financeCountyTotals(rows), selectedCounties);
   const countyTop = topEntries(countyTotals, selectedCounties.length ? selectedCounties.length : 10);
   const yearTotals = financeYearTotals(rows);
@@ -458,12 +462,7 @@ function renderFinanceCharts(selectedCounties) {
     "chart2-title",
     "Total Expenditures by Fiscal Year",
     yearTotals.map(function (d) { return d[0]; }),
-    [{
-      label: "Expenditures",
-      data: yearTotals.map(function (d) { return d[1]; }),
-      tension: 0.2,
-      fill: false
-    }]
+    [{ label: "Expenditures", data: yearTotals.map(function (d) { return d[1]; }), tension: 0.2, fill: false }]
   );
 
   chart3Instance = makeDoughnutChart(
@@ -477,9 +476,9 @@ function renderFinanceCharts(selectedCounties) {
 
 function renderLiquorCharts(selectedCounties) {
   document.getElementById("charts-title").textContent = "Liquor Sales Graphs";
-
   const liquorRows = loadedData.Liquor;
   const cityCountyLookup = buildCityToCountyLookup(loadedData.CityCountyMap);
+
   const countyTotals = liquorCountyTotalsForSelected(liquorRows, cityCountyLookup, selectedCounties);
   const countyTop = topEntries(countyTotals, selectedCounties.length ? selectedCounties.length : 10);
   const monthTotals = liquorMonthTotals(liquorRows);
@@ -499,12 +498,7 @@ function renderLiquorCharts(selectedCounties) {
     "chart2-title",
     "Liquor Sales by Month",
     monthTotals.map(function (d) { return d[0]; }),
-    [{
-      label: "Sales",
-      data: monthTotals.map(function (d) { return d[1]; }),
-      tension: 0.2,
-      fill: false
-    }]
+    [{ label: "Sales", data: monthTotals.map(function (d) { return d[1]; }), tension: 0.2, fill: false }]
   );
 
   chart3Instance = makeBarChart(
@@ -519,18 +513,17 @@ function renderLiquorCharts(selectedCounties) {
 
 function renderCombinedCharts(selectedDatasets, selectedCounties) {
   document.getElementById("charts-title").textContent = "Combined Dataset Comparison";
-
   const cityCountyLookup = buildCityToCountyLookup(loadedData.CityCountyMap);
 
   const school = normalizeSeries(keepOnlySelectedLocations(schoolCountyTotals(loadedData.Education_Enrollment), selectedCounties));
   const finance = normalizeSeries(keepOnlySelectedLocations(financeCountyTotals(loadedData.Finance), selectedCounties));
   const liquor = normalizeSeries(liquorCountyTotalsForSelected(loadedData.Liquor, cityCountyLookup, selectedCounties));
 
-  const countyLabels = Array.from(new Set([
-    ...Object.keys(school),
-    ...Object.keys(finance),
-    ...Object.keys(liquor)
-  ])).sort();
+  const countyLabels = Array.from(new Set([...Object.keys(school), ...Object.keys(finance), ...Object.keys(liquor)])).sort();
+
+  const schoolValues = countyLabels.map(function (county) { return school[county] || 0; });
+  const financeValues = countyLabels.map(function (county) { return finance[county] || 0; });
+  const liquorValues = countyLabels.map(function (county) { return liquor[county] || 0; });
 
   document.getElementById("chart1-title").textContent = "Normalized County Comparison";
   chart1Instance = new Chart(document.getElementById("chart1").getContext("2d"), {
@@ -538,21 +531,9 @@ function renderCombinedCharts(selectedDatasets, selectedCounties) {
     data: {
       labels: countyLabels,
       datasets: [
-        ...(selectedDatasets.includes("Education_Enrollment") ? [{
-          label: "School Enrollment (Normalized)",
-          data: countyLabels.map(function (county) { return school[county] || 0; }),
-          borderWidth: 1
-        }] : []),
-        ...(selectedDatasets.includes("Finance") ? [{
-          label: "County Budget (Normalized)",
-          data: countyLabels.map(function (county) { return finance[county] || 0; }),
-          borderWidth: 1
-        }] : []),
-        ...(selectedDatasets.includes("Liquor") ? [{
-          label: "Liquor Sales (Normalized)",
-          data: countyLabels.map(function (county) { return liquor[county] || 0; }),
-          borderWidth: 1
-        }] : [])
+        ...(selectedDatasets.includes("Education_Enrollment") ? [{ label: "School Enrollment (Normalized)", data: schoolValues, borderWidth: 1 }] : []),
+        ...(selectedDatasets.includes("Finance") ? [{ label: "County Budget (Normalized)", data: financeValues, borderWidth: 1 }] : []),
+        ...(selectedDatasets.includes("Liquor") ? [{ label: "Liquor Sales (Normalized)", data: liquorValues, borderWidth: 1 }] : [])
       ]
     },
     options: {
@@ -578,6 +559,7 @@ function renderCombinedCharts(selectedDatasets, selectedCounties) {
     }]
   );
 
+  let lineLabels = [];
   const datasetMap = {};
 
   if (selectedDatasets.includes("Education_Enrollment")) {
@@ -604,39 +586,23 @@ function renderCombinedCharts(selectedDatasets, selectedCounties) {
     });
   }
 
-  const lineLabels = Object.keys(datasetMap).sort();
-  const schoolSeries = lineLabels.map(function (label) { return datasetMap[label] && datasetMap[label].school ? datasetMap[label].school : 0; });
-  const financeSeries = lineLabels.map(function (label) { return datasetMap[label] && datasetMap[label].finance ? datasetMap[label].finance : 0; });
-  const liquorSeries = lineLabels.map(function (label) { return datasetMap[label] && datasetMap[label].liquor ? datasetMap[label].liquor : 0; });
-
+  lineLabels = Object.keys(datasetMap).sort();
+  const schoolSeries = lineLabels.map(function (label) { return datasetMap[label]?.school || 0; });
+  const financeSeries = lineLabels.map(function (label) { return datasetMap[label]?.finance || 0; });
+  const liquorSeries = lineLabels.map(function (label) { return datasetMap[label]?.liquor || 0; });
   const schoolMax = Math.max(0, ...schoolSeries);
   const financeMax = Math.max(0, ...financeSeries);
   const liquorMax = Math.max(0, ...liquorSeries);
 
   const lineDatasets = [];
   if (selectedDatasets.includes("Education_Enrollment")) {
-    lineDatasets.push({
-      label: "Enrollment Trend",
-      data: schoolSeries.map(function (value) { return schoolMax === 0 ? 0 : (value / schoolMax) * 100; }),
-      tension: 0.2,
-      fill: false
-    });
+    lineDatasets.push({ label: "Enrollment Trend", data: schoolSeries.map(function (value) { return schoolMax === 0 ? 0 : (value / schoolMax) * 100; }), tension: 0.2, fill: false });
   }
   if (selectedDatasets.includes("Finance")) {
-    lineDatasets.push({
-      label: "Budget Trend",
-      data: financeSeries.map(function (value) { return financeMax === 0 ? 0 : (value / financeMax) * 100; }),
-      tension: 0.2,
-      fill: false
-    });
+    lineDatasets.push({ label: "Budget Trend", data: financeSeries.map(function (value) { return financeMax === 0 ? 0 : (value / financeMax) * 100; }), tension: 0.2, fill: false });
   }
   if (selectedDatasets.includes("Liquor")) {
-    lineDatasets.push({
-      label: "Liquor Trend",
-      data: liquorSeries.map(function (value) { return liquorMax === 0 ? 0 : (value / liquorMax) * 100; }),
-      tension: 0.2,
-      fill: false
-    });
+    lineDatasets.push({ label: "Liquor Trend", data: liquorSeries.map(function (value) { return liquorMax === 0 ? 0 : (value / liquorMax) * 100; }), tension: 0.2, fill: false });
   }
 
   chart3Instance = makeLineChart(
@@ -664,18 +630,9 @@ async function updateCharts() {
   }
 
   if (selectedDatasets.length === 1) {
-    if (selectedDatasets[0] === "Education_Enrollment") {
-      renderSchoolCharts(selectedCounties);
-      return;
-    }
-    if (selectedDatasets[0] === "Finance") {
-      renderFinanceCharts(selectedCounties);
-      return;
-    }
-    if (selectedDatasets[0] === "Liquor") {
-      renderLiquorCharts(selectedCounties);
-      return;
-    }
+    if (selectedDatasets[0] === "Education_Enrollment") return renderSchoolCharts(selectedCounties);
+    if (selectedDatasets[0] === "Finance") return renderFinanceCharts(selectedCounties);
+    if (selectedDatasets[0] === "Liquor") return renderLiquorCharts(selectedCounties);
   }
 
   renderCombinedCharts(selectedDatasets, selectedCounties);
