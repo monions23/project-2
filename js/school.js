@@ -100,7 +100,7 @@ function getColorForMultiRace(pct) {
 
 // color dispatcher
 function getCountyColor(countyName) {
-  if (!countyData[countyName]) return "#ffffff";
+  if (!countyData[countyName]) return noDataColor;
   var d = countyData[countyName];
   if (currentMode === "enrollment") return getColorForEnrollment(d.total);
   if (currentMode === "pct_hispanic") return getColorForHispanic(d.pctHispanic);
@@ -110,9 +110,8 @@ function getCountyColor(countyName) {
   if (currentMode === "pct_native") return getColorForNative(d.pctNative);
   if (currentMode === "pct_multirace")
     return getColorForMultiRace(d.pctMultiRace);
-  return "#ffffff";
+  return noDataColor;
 }
-
 // Tooltip label dispatcher
 function getTooltipLine(countyName, mode) {
   if (!countyData[countyName]) return "No data";
@@ -144,7 +143,6 @@ function getTooltipLine(countyName, mode) {
     );
   return "No data";
 }
-
 // Globals for iowa_map.js compatibility
 var countyTotals = {};
 var countyData = {}; // countyData[name] = { total, pctBlack, pctHispanic, ... }
@@ -171,7 +169,12 @@ function repaintMap() {
 // radio buttons. It updates the currentMode and repaints the map with the new color scheme.
 function setEnrollmentMode(mode) {
   currentMode = mode;
-  registerLayer("school:" + mode, _schoolLayerLabel(mode), _schoolLegendColors(mode));
+  repaintMap();
+  registerLayer(
+    "school:" + mode,
+    _schoolLayerLabel(mode),
+    _schoolLegendColors(mode),
+  );
   repaintWithBlend();
 }
 
@@ -179,11 +182,17 @@ function setEnrollmentMode(mode) {
 // so the bivariate legend renders a proper 3×3 grid when 2 metrics are active.
 function refreshSchoolLayer() {
   unregisterLayerGroup("school");
-  var checked = document.querySelectorAll('input[name="enrollment-metric"]:checked');
+  var checked = document.querySelectorAll(
+    'input[name="enrollment-metric"]:checked',
+  );
   if (checked.length === 0) return;
   currentMode = checked[0].value;
-  checked.forEach(function(cb) {
-    registerLayer("school:" + cb.value, _schoolLayerLabel(cb.value), _schoolLegendColors(cb.value));
+  checked.forEach(function (cb) {
+    registerLayer(
+      "school:" + cb.value,
+      _schoolLayerLabel(cb.value),
+      _schoolLegendColors(cb.value),
+    );
   });
   repaintWithBlend();
 }
@@ -191,24 +200,24 @@ function refreshSchoolLayer() {
 // Returns representative [low, mid, high] colors for the given (or current) enrollment mode.
 function _schoolLegendColors(mode) {
   var m = mode || currentMode;
-  if (m === "enrollment")    return [_RED1,    _RED4,    _RED8];
-  if (m === "pct_hispanic")  return ["#FAF4FF", "#B966EE", "#4A0080"];
-  if (m === "pct_black")     return ["#EEF7FE", "#4D9EE0", "#003366"];
-  if (m === "pct_asian")     return ["#F0FBF1", "#33CC33", "#004D00"];
-  if (m === "pct_white")     return ["#E0F9F9", "#33CCCC", "#003D3D"];
-  if (m === "pct_native")    return ["#FDF0E0", "#E89030", "#7A3B00"];
+  if (m === "enrollment") return [_RED1, _RED4, _RED8];
+  if (m === "pct_hispanic") return ["#FAF4FF", "#B966EE", "#4A0080"];
+  if (m === "pct_black") return ["#EEF7FE", "#4D9EE0", "#003366"];
+  if (m === "pct_asian") return ["#F0FBF1", "#33CC33", "#004D00"];
+  if (m === "pct_white") return ["#E0F9F9", "#33CCCC", "#003D3D"];
+  if (m === "pct_native") return ["#FDF0E0", "#E89030", "#7A3B00"];
   if (m === "pct_multirace") return ["#FDF8EC", "#DDBB44", "#4D3300"];
   return [_RED1, _RED4, _RED8];
 }
 
 function _schoolLayerLabel(mode) {
   var m = mode || currentMode;
-  if (m === "enrollment")    return "School Enrollment";
-  if (m === "pct_hispanic")  return "% Hispanic students";
-  if (m === "pct_black")     return "% Black students";
-  if (m === "pct_asian")     return "% Asian students";
-  if (m === "pct_white")     return "% White students";
-  if (m === "pct_native")    return "% Native American";
+  if (m === "enrollment") return "School Enrollment";
+  if (m === "pct_hispanic") return "% Hispanic students";
+  if (m === "pct_black") return "% Black students";
+  if (m === "pct_asian") return "% Asian students";
+  if (m === "pct_white") return "% White students";
+  if (m === "pct_native") return "% Native American";
   if (m === "pct_multirace") return "% Multi-race students";
   return "School Enrollment";
 }
@@ -275,7 +284,7 @@ function enrollmentClickHandler() {
     countyTotals = {};
     countyData = {};
     currentMode = "enrollment";
-    d3.selectAll("path").style("fill", "#ffffff");
+    d3.selectAll("path").style("fill", noDataColor);
     document.getElementById("enrollment-suboptions").style.display = "none";
     repaintWithBlend();
     return;
@@ -292,7 +301,11 @@ function enrollmentClickHandler() {
 
     document.getElementById("enrollment-suboptions").style.display = "block";
 
-    registerLayer("school:enrollment", _schoolLayerLabel("enrollment"), _schoolLegendColors("enrollment"));
+    registerLayer(
+      "school:enrollment",
+      _schoolLayerLabel("enrollment"),
+      _schoolLegendColors("enrollment"),
+    );
     repaintWithBlend();
 
     console.log(
