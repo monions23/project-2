@@ -6,17 +6,11 @@ var previousCounty = "";
 var dragColor = "";
 var firstNodeActive = false;
 
-// Returns the correct resting color for a county.
-// If school.js has loaded enrollment data, use that color.
-// Otherwise fall back to white (the default blank map state).
+// Returns the blended resting color for a county across all active datasets.
+// Falls back to white when no datasets are loaded.
 function getBaseColor(countyName) {
-  if (typeof countyTotals !== "undefined" && countyTotals[countyName]) {
-    return getColorForEnrollment(countyTotals[countyName]);
-  } else if (!(countyName in activeCounties)) {
-    return "#FFBC3E";
-  } else {
-    return "#ffffff";
-  }
+  if (typeof getBlendedColor === "function") return getBlendedColor(countyName);
+  return "#ffffff";
 }
 
 const svg = d3

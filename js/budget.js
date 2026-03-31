@@ -83,23 +83,25 @@ function getColorForEducation(val) {
   return "#FDFAE0";
 }
 
-// Master color dispatcher 
-function getBudgetCountyColor(countyName) {
+// Master color dispatcher
+function getBudgetCountyColor(countyName, mode) {
   if (!budgetData[countyName]) return "#ffffff";
   var d = budgetData[countyName];
-  if (budgetMode === "total")     return getColorForTotal(d.total);
-  if (budgetMode === "safety")    return getColorForSafety(d.safety);
-  if (budgetMode === "health")    return getColorForHealth(d.health);
-  if (budgetMode === "roads")     return getColorForRoads(d.roads);
-  if (budgetMode === "admin")     return getColorForAdmin(d.admin);
-  if (budgetMode === "education") return getColorForEducation(d.education);
+  var m = mode || budgetMode;
+  if (m === "total")     return getColorForTotal(d.total);
+  if (m === "safety")    return getColorForSafety(d.safety);
+  if (m === "health")    return getColorForHealth(d.health);
+  if (m === "roads")     return getColorForRoads(d.roads);
+  if (m === "admin")     return getColorForAdmin(d.admin);
+  if (m === "education") return getColorForEducation(d.education);
   return "#ffffff";
 }
 
-//  Tooltip label dispatcher 
-function getBudgetTooltipLine(countyName) {
+//  Tooltip label dispatcher
+function getBudgetTooltipLine(countyName, mode) {
   if (!budgetData[countyName]) return "No data";
   var d = budgetData[countyName];
+  var m = mode || budgetMode;
 
   // Format dollar amounts nicely: $27,415,783 → $27.4M
   function fmt(val) {
@@ -108,12 +110,12 @@ function getBudgetTooltipLine(countyName) {
     return "$" + val.toLocaleString();
   }
 
-  if (budgetMode === "total")     return "Total expenditures: <strong>" + fmt(d.total) + "</strong>";
-  if (budgetMode === "safety")    return "Public safety: <strong>" + fmt(d.safety) + "</strong>";
-  if (budgetMode === "health")    return "Health & social: <strong>" + fmt(d.health) + "</strong>";
-  if (budgetMode === "roads")     return "Roads & transport: <strong>" + fmt(d.roads) + "</strong>";
-  if (budgetMode === "admin")     return "Administration: <strong>" + fmt(d.admin) + "</strong>";
-  if (budgetMode === "education") return "Environment & education: <strong>" + fmt(d.education) + "</strong>";
+  if (m === "total")     return "Total expenditures: <strong>" + fmt(d.total) + "</strong>";
+  if (m === "safety")    return "Public safety: <strong>" + fmt(d.safety) + "</strong>";
+  if (m === "health")    return "Health & social: <strong>" + fmt(d.health) + "</strong>";
+  if (m === "roads")     return "Roads & transport: <strong>" + fmt(d.roads) + "</strong>";
+  if (m === "admin")     return "Administration: <strong>" + fmt(d.admin) + "</strong>";
+  if (m === "education") return "Environment & education: <strong>" + fmt(d.education) + "</strong>";
   return "No data";
 }
 
@@ -153,9 +155,13 @@ function attachBudgetHoverEvents() {
       }
       if (Object.keys(budgetData).length > 0) {
         var name = d.properties.NAME;
+        var lines = [];
+        document.querySelectorAll('input[name="budget-metric"]:checked').forEach(function(cb) {
+          lines.push(getBudgetTooltipLine(name, cb.value));
+        });
         budgetTooltip
           .style("display", "block")
-          .html("<strong>" + name + " County</strong><br>" + getBudgetTooltipLine(name));
+          .html("<strong>" + name + " County</strong><br>" + (lines.length > 0 ? lines.join("<br>") : getBudgetTooltipLine(name)));
       }
     })
     .on("mousemove.budget", function (event) {
@@ -168,10 +174,7 @@ function attachBudgetHoverEvents() {
       budgetTooltip.style("display", "none");
       if (!d3.select(this).classed("active")) {
         var name = d.properties.NAME;
-        var restoreColor = Object.keys(budgetData).length > 0
-          ? getBudgetCountyColor(name)
-          : "#ffffff";
-        d3.select(this).transition().duration(200).style("fill", restoreColor);
+        d3.select(this).transition().duration(200).style("fill", getBlendedColor(name));
       }
     });
 }
@@ -185,21 +188,52 @@ function removeBudgetHoverEvents() {
   if (budgetTooltip) budgetTooltip.style("display", "none");
 }
 
-//  Repaints all counties with the current budget mode
+//  Repaints all counties with the current budget mode (blended with other active layers)
 function repaintBudgetMap() {
-  svg.selectAll("path").each(function(d) {
-    if (!d || !d.properties) return;
-    var name = d.properties.NAME;
-    if (!d3.select(this).classed("active")) {
-      d3.select(this).style("fill", getBudgetCountyColor(name));
-    }
-  });
+  repaintWithBlend();
 }
 
 //  Called when user picks a budget's other metric (safety, health, roads, admin, education)
 function setBudgetMode(mode) {
   budgetMode = mode;
-  repaintBudgetMap();
+  registerLayer("budget:" + mode, _budgetLayerLabel(mode), _budgetLegendColors(mode));
+  repaintWithBlend();
+}
+
+// Called from onchange on sub-metric checkboxes; registers one layer per checked metric
+// so the bivariate legend renders a proper 3×3 grid when 2 metrics are active.
+function refreshBudgetLayer() {
+  unregisterLayerGroup("budget");
+  var checked = document.querySelectorAll('input[name="budget-metric"]:checked');
+  if (checked.length === 0) return;
+  budgetMode = checked[0].value;
+  checked.forEach(function(cb) {
+    registerLayer("budget:" + cb.value, _budgetLayerLabel(cb.value), _budgetLegendColors(cb.value));
+  });
+  repaintWithBlend();
+}
+
+// Returns representative [low, mid, high] colors for the given (or current) budget mode.
+function _budgetLegendColors(mode) {
+  var m = mode || budgetMode;
+  if (m === "total")     return ["#DDEEFA", "#4D92CC", "#0A1628"];
+  if (m === "safety")    return ["#FDF0E5", "#E86A22", "#5C1A00"];
+  if (m === "health")    return ["#FDF0F8", "#DD44AA", "#5C003C"];
+  if (m === "roads")     return ["#E5F8E5", "#55BB55", "#003300"];
+  if (m === "admin")     return ["#F5EEFE", "#8844CC", "#2A0050"];
+  if (m === "education") return ["#FDFAE0", "#DDBB33", "#3D2800"];
+  return ["#DDEEFA", "#4D92CC", "#0A1628"];
+}
+
+function _budgetLayerLabel(mode) {
+  var m = mode || budgetMode;
+  if (m === "total")     return "Budget: Total";
+  if (m === "safety")    return "Budget: Public Safety";
+  if (m === "health")    return "Budget: Health";
+  if (m === "roads")     return "Budget: Roads";
+  if (m === "admin")     return "Budget: Admin";
+  if (m === "education") return "Budget: Education";
+  return "County Budget";
 }
 
 // Changed dollar string to number
@@ -262,12 +296,12 @@ function budgetClickHandler() {
   var isChecked = event.target.checked;
 
   if (!isChecked) {
-    // Reset everything and return map to white
     budgetData = {};
     budgetMode = "total";
-    d3.selectAll("path").style("fill", "#ffffff");
+    unregisterLayerGroup("budget");
     document.getElementById("budget-suboptions").style.display = "none";
     removeBudgetHoverEvents();
+    repaintWithBlend();
     return;
   }
 
@@ -277,17 +311,13 @@ function budgetClickHandler() {
     budgetData = buildBudgetData(csvData);
     budgetMode = "total";
 
-    // Users can only select one submetric at a time so reset to first option (Total expenditures)
     var radios = document.querySelectorAll('input[name="budget-metric"]');
     if (radios.length > 0) radios[0].checked = true;
 
-    // Show the sub-metric options
     document.getElementById("budget-suboptions").style.display = "block";
 
-    // Paint the map
-    repaintBudgetMap();
-
-    // Attach hover tooltip
+    registerLayer("budget:total", _budgetLayerLabel("total"), _budgetLegendColors("total"));
+    repaintWithBlend();
     attachBudgetHoverEvents();
 
     console.log("[budget.js] Loaded. Polk:", budgetData["Polk"], "| Ringgold:", budgetData["Ringgold"]);
