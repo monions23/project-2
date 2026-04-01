@@ -20,7 +20,11 @@ https://github.com/user-attachments/assets/440de4a4-8df4-4bfb-a4fc-c425ccdef127
 
 Note that when a user chooses a dataset, only the counties that are selected render data. Users can choose specific attributes of each dataset to display. The resulting data is visualized in either univariate maps (if one dataset's attribute is selected at once) or bivariate maps (if two datasets' attributes are selected at once).
 
-https://github.com/user-attachments/assets/c936344f-2467-4f1e-958b-e793f1fd0883
+When the user hovers over a county, a tooltip appears that displays that county's corresponding data.
+
+
+https://github.com/user-attachments/assets/32d5db25-db83-4ef5-b79c-b2e9cb827939
+
 
 Below the map section are visualizations that reflect the selected counties and dataset chosen. These charts update automatically when the selected information (counties and/or datasets) are changed by the user.
 
