@@ -34,7 +34,6 @@ Below the map section are visualizations that reflect the selected counties and 
      git clone https://github.com/monions23/project-2.git
 
      cd project-2
-
    ```
      This will clone the repository, and then it will move to the correct directory so you can pull/push changes.
 ## Usage Instructions
